@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ENEM 2026 – CC</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#09090b;--bg2:#111116;--bg3:#18181f;--bg4:#1f1f2a;--ac:#7c5cfc;--ac2:#a78bfa;--g:#22c55e;--r:#ef4444;--y:#eab308;--o:#f97316;--cy:#06b6d4;--pk:#ec4899;--t:#f0f0f5;--t2:#a0a0b8;--t3:#5a5a72;--bd:#2a2a3a}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--t);min-height:100vh;-webkit-tap-highlight-color:transparent}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.app{max-width:900px;margin:0 auto;padding:12px 12px 100px}
+
+/* --- HEADER --- */
+header{text-align:center;padding:24px 8px 16px}
+.badge{display:inline-block;padding:3px 10px;background:rgba(124,92,252,.1);border:1px solid rgba(124,92,252,.2);border-radius:50px;font-size:.6rem;font-weight:700;color:var(--ac2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+header h1{font-size:clamp(1.5rem,6vw,2.5rem);font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,#fff,var(--ac2),var(--cy));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+header p{color:var(--t3);font-size:.72rem;margin-top:4px}
+.goals{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;margin-top:6px}
+.gl{padding:2px 8px;border-radius:4px;font-size:.54rem;font-weight:700}
+.gl:nth-child(1){background:rgba(124,92,252,.12);color:var(--ac2)}
+.gl:nth-child(2){background:rgba(239,68,68,.12);color:var(--r)}
+.gl:nth-child(3){background:rgba(34,197,94,.12);color:var(--g)}
+
+/* --- TIMER --- */
+section.timer{background:var(--bg2);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:10px;text-align:center}
+.t-lbl{font-size:.62rem;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:1px}
+.t-dots{display:flex;justify-content:center;gap:5px;margin:5px 0}
+.t-dot{width:7px;height:7px;border-radius:50%;background:var(--bg4);transition:.3s}
+.t-dot.at{background:var(--ac);box-shadow:0 0 6px var(--ac)}
+.t-dot.ap{background:var(--g);box-shadow:0 0 6px var(--g)}
+.t-dot.dn{background:var(--g)}
+.t-disp{font-size:clamp(2.2rem,10vw,3.8rem);font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-2px;cursor:pointer;border-radius:10px;padding:2px 10px;display:inline-block;transition:.2s;user-select:none}
+.t-disp:hover{background:var(--bg4)}
+.t-disp.theory{color:var(--ac2)}.t-disp.practice{color:var(--g)}
+.t-disp.overtime{color:var(--r);animation:blk 1s infinite}
+.t-disp.editing{background:var(--bg4);outline:2px solid var(--ac)}
+@keyframes blk{50%{opacity:.4}}
+.t-edit{display:none;align-items:center;justify-content:center;gap:6px;margin:6px 0}
+.t-edit.show{display:flex}
+.t-edit input{width:50px;padding:6px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;color:var(--t);font-family:inherit;font-size:.95rem;text-align:center;font-weight:700;outline:none}
+.t-edit input:focus{border-color:var(--ac)}
+.t-presets{display:flex;gap:3px;justify-content:center;margin:5px 0;flex-wrap:wrap}
+.pre{padding:2px 7px;border:1px solid var(--bd);border-radius:4px;background:var(--bg);color:var(--t3);font-size:.5rem;font-weight:600;cursor:pointer;font-family:inherit}
+.pre:hover{border-color:var(--ac);color:var(--ac2)}
+.t-btns{display:flex;gap:6px;justify-content:center;margin-top:6px}
+.tb{padding:8px 14px;border:none;border-radius:8px;font-family:inherit;font-size:.72rem;font-weight:700;cursor:pointer;touch-action:manipulation}
+.tb:active{transform:scale(.95)}
+.tb-go{background:var(--g);color:#fff}.tb-go.run{background:var(--y);color:#000}
+.tb-sk{background:var(--ac);color:#fff}.tb-rs{background:var(--bg4);color:var(--t2);border:1px solid var(--bd)}
+.t-bar{width:100%;height:4px;background:var(--bg);border-radius:4px;margin-top:8px;overflow:hidden}
+.t-bf{height:100%;border-radius:4px;transition:width .5s}
+.t-bf.theory{background:linear-gradient(90deg,var(--ac),var(--ac2))}
+.t-bf.practice{background:linear-gradient(90deg,var(--g),var(--cy))}
+.t-td{margin-top:6px;font-size:.58rem;color:var(--t3)}.t-td b{color:var(--g)}
+
+/* --- STREAK --- */
+aside.streak{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+.s-i{font-size:1.3rem;animation:flm 1s ease-in-out infinite alternate}
+@keyframes flm{to{transform:scale(1.1) rotate(3deg)}}
+.s-n{font-size:1.2rem;font-weight:900;color:var(--o)}.s-l{font-size:.5rem;color:var(--t3)}
+.s-g{display:flex;gap:2px;margin-left:auto}.s-c{width:10px;height:10px;border-radius:2px;background:var(--bg)}
+.s-c.on{background:var(--g)}.s-c.now{outline:2px solid var(--ac);outline-offset:1px}
+
+/* --- STATS --- */
+section.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px}
+.st{background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:8px 4px;text-align:center;position:relative;overflow:hidden}
+.st::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.st:nth-child(1)::after{background:var(--ac)}.st:nth-child(2)::after{background:var(--g)}.st:nth-child(3)::after{background:var(--y)}
+.st:nth-child(4)::after{background:var(--o)}.st:nth-child(5)::after{background:var(--cy)}.st:nth-child(6)::after{background:var(--pk)}
+.sv{font-size:1.1rem;font-weight:800}
+.st:nth-child(1) .sv{color:var(--ac2)}.st:nth-child(2) .sv{color:var(--g)}.st:nth-child(3) .sv{color:var(--y)}
+.st:nth-child(4) .sv{color:var(--o)}.st:nth-child(5) .sv{color:var(--cy)}.st:nth-child(6) .sv{color:var(--pk)}
+.sl{font-size:.44rem;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;font-weight:700;margin-top:2px}
+
+/* --- PROGRESS --- */
+section.prog{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:10px}
+.prog-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.prog-top h2{font-size:.75rem;font-weight:700}.prog-pct{font-size:.95rem;font-weight:800;color:var(--g)}
+.pbar{height:6px;background:var(--bg);border-radius:6px;overflow:hidden}
+.pbf{height:100%;background:linear-gradient(90deg,var(--ac),var(--g));border-radius:6px;transition:width .6s;position:relative}
+.pbf::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);animation:shm 2.5s infinite}
+@keyframes shm{0%{transform:translateX(-100%)}100%{transform:translateX(200%)}}
+.pbars{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:8px}
+.pm{text-align:center}.pm-l{font-size:.46rem;color:var(--t3);font-weight:600;margin-bottom:2px}
+.pm-b{height:3px;background:var(--bg);border-radius:3px;overflow:hidden}
+.pm-f{height:100%;border-radius:3px;transition:width .5s}
+.pm:nth-child(1) .pm-f{background:var(--g)}.pm:nth-child(2) .pm-f{background:var(--y)}
+.pm:nth-child(3) .pm-f{background:var(--ac)}.pm:nth-child(4) .pm-f{background:var(--r)}
+.pm-p{font-size:.42rem;color:var(--t3);font-weight:700;margin-top:1px}
+
+/* --- SYNC --- */
+section.sync{background:var(--bg2);border:1px solid var(--bd);border-radius:10px;padding:10px;margin-bottom:10px}
+.sync h3{font-size:.68rem;font-weight:700;margin-bottom:6px}
+.sync-row{display:flex;gap:4px;flex-wrap:wrap}
+.sb{padding:5px 9px;border:1px solid var(--bd);border-radius:6px;background:var(--bg3);color:var(--t2);font-family:inherit;font-size:.58rem;font-weight:600;cursor:pointer;touch-action:manipulation}
+.sb:hover{border-color:var(--ac);color:var(--ac2)}.sb:active{transform:scale(.95)}
+.sc{width:100%;margin-top:6px;padding:6px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;color:var(--t);font-family:monospace;font-size:.5rem;resize:vertical;min-height:40px;display:none;outline:none}
+.sc.show{display:block}.sc:focus{border-color:var(--ac)}
+.imp{display:none;margin-top:4px;gap:4px}.imp.show{display:flex}
+
+/* --- NAV --- */
+nav.bar{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px}
+.search{flex:1;min-width:100px;padding:6px 8px;background:var(--bg2);border:1px solid var(--bd);border-radius:6px;color:var(--t);font-family:inherit;font-size:.68rem;outline:none}
+.search:focus{border-color:var(--ac)}.search::placeholder{color:var(--t3)}
+.sel{padding:6px 4px;background:var(--bg2);border:1px solid var(--bd);border-radius:6px;color:var(--t);font-family:inherit;font-size:.62rem;outline:none}
+.nb{padding:5px 8px;background:var(--bg3);border:1px solid var(--bd);border-radius:6px;color:var(--t2);font-family:inherit;font-size:.58rem;font-weight:600;cursor:pointer;touch-action:manipulation;white-space:nowrap}
+.nb:hover{border-color:var(--ac);color:var(--ac2)}.nb:active{transform:scale(.95)}
+
+/* --- PHASE --- */
+section.ph{margin-bottom:14px}
+.ph-h{display:flex;align-items:center;gap:8px;padding:10px 11px;background:var(--bg2);border:1px solid var(--bd);border-radius:10px;cursor:pointer;user-select:none;position:relative;overflow:hidden}
+.ph-h:active{background:var(--bg3)}
+.ph-h::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.ph[data-p="1"] .ph-h::before{background:var(--g)}.ph[data-p="2"] .ph-h::before{background:var(--y)}
+.ph[data-p="3"] .ph-h::before{background:var(--ac)}.ph[data-p="4"] .ph-h::before{background:var(--r)}
+.ph-e{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.ph[data-p="1"] .ph-e{background:rgba(34,197,94,.12)}.ph[data-p="2"] .ph-e{background:rgba(234,179,8,.12)}
+.ph[data-p="3"] .ph-e{background:rgba(124,92,252,.12)}.ph[data-p="4"] .ph-e{background:rgba(239,68,68,.12)}
+.ph-i{flex:1;min-width:0}.ph-t{font-weight:700;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ph-s{font-size:.5rem;color:var(--t3)}
+.ph-c{padding:2px 6px;border-radius:4px;font-size:.52rem;font-weight:700;background:var(--bg);white-space:nowrap}
+.ph-a{font-size:.65rem;color:var(--t3);transition:transform .3s;margin-left:2px}
+.ph.cl .ph-a{transform:rotate(-90deg)}
+.ph-b{padding-left:2px;overflow:hidden;transition:max-height .4s,opacity .3s}
+.ph.cl .ph-b{max-height:0!important;opacity:0}
+
+/* --- WEEK --- */
+article.wk{margin:7px 0 0 4px;border-left:2px solid var(--bd);padding-left:8px}
+.wk-h{display:flex;align-items:center;gap:5px;padding:5px 7px;cursor:pointer;border-radius:6px;user-select:none}
+.wk-h:active{background:var(--bg3)}
+.wk-d{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.wk-d.cpl{background:var(--g)!important;box-shadow:0 0 4px rgba(34,197,94,.3)}
+.wk-t{font-weight:600;font-size:.68rem;flex:1}
+.wk-bg{font-size:.48rem;padding:1px 4px;border-radius:3px;font-weight:700;background:var(--bg);color:var(--t3);white-space:nowrap}
+.wk-bg.wd{background:rgba(34,197,94,.1);color:var(--g)}
+.wk-ar{font-size:.55rem;color:var(--t3);transition:transform .3s}
+.wk.cl .wk-ar{transform:rotate(-90deg)}
+.wk-b{padding:2px 0 2px 2px;display:grid;gap:3px;overflow:hidden;transition:max-height .3s,opacity .2s}
+.wk.cl .wk-b{max-height:0!important;opacity:0;padding:0}
+
+/* --- TASK --- */
+article.tk{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;padding:8px 10px;background:var(--bg2);border:1px solid var(--bd);border-radius:8px;position:relative}
+article.tk::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.tk.p-alta::before{background:var(--r)}.tk.p-media::before{background:var(--y)}.tk.p-baixa::before{background:var(--g)}
+.tk:active{background:var(--bg3)}.tk.done{opacity:.4}.tk.done h4{text-decoration:line-through;color:var(--t3)}
+.tk.multi{border-left:3px solid var(--o)}.tk.multi::before{display:none}
+.tk.sim{border-left:3px solid var(--r)}.tk.sim::before{display:none}
+.tk.rest{border-left:3px solid var(--g);opacity:.7}.tk.rest::before{display:none}
+
+.ck{width:28px;height:28px;border-radius:6px;border:2px solid var(--bd);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s cubic-bezier(.175,.885,.32,1.275);flex-shrink:0;touch-action:manipulation;position:relative;font-size:0}
+.ck:active{transform:scale(.85)}.ck.on{background:var(--g);border-color:var(--g);animation:pop .4s}
+.ck.on::after{content:'✓';font-size:13px;color:#fff;font-weight:800}
+@keyframes pop{30%{transform:scale(1.3)}60%{transform:scale(.9)}}
+
+.tk-c{min-width:0}
+.tk-c h4{font-weight:600;font-size:.7rem;line-height:1.3}
+.tk-c p{font-size:.6rem;color:var(--t2);line-height:1.4;margin-top:1px;display:none}
+.tk.exp .tk-c p{display:block}
+.tk-tags{display:flex;gap:2px;flex-wrap:wrap;margin-top:3px}
+.tg{padding:0 4px;border-radius:2px;font-size:.42rem;font-weight:700;text-transform:uppercase}
+.tg-Mat{background:rgba(124,92,252,.1);color:var(--ac2)}.tg-Fís{background:rgba(249,115,22,.1);color:var(--o)}
+.tg-Quí{background:rgba(34,197,94,.1);color:var(--g)}.tg-Bio{background:rgba(6,182,212,.1);color:var(--cy)}
+.tg-Hum{background:rgba(234,179,8,.1);color:var(--y)}.tg-Ling{background:rgba(236,72,153,.1);color:var(--pk)}
+.tg-Red{background:rgba(168,85,247,.1);color:#a78bfa}.tg-Rev{background:rgba(100,100,130,.1);color:var(--t2)}
+.tg-Sim{background:rgba(239,68,68,.1);color:var(--r)}.tg-OFF{background:rgba(34,197,94,.06);color:var(--g)}
+
+.tk-m{display:flex;flex-direction:column;align-items:flex-end;gap:1px;min-width:40px}
+.tk-m .dy{font-size:.48rem;color:var(--t3);font-weight:600}
+.tk-m time{font-size:.54rem;color:var(--t2);font-weight:700}
+.nbtn{padding:1px 4px;background:var(--bg);border:1px solid var(--bd);border-radius:3px;color:var(--t3);font-size:.46rem;cursor:pointer;font-family:inherit}
+.nbtn.has{color:var(--y);border-color:rgba(234,179,8,.3)}
+
+dialog{background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:20px;width:90%;max-width:400px;color:var(--t)}
+dialog::backdrop{background:rgba(0,0,0,.8);backdrop-filter:blur(6px)}
+dialog h3{font-size:.8rem;margin-bottom:2px}
+dialog .msub{font-size:.62rem;color:var(--t3);margin-bottom:8px}
+dialog textarea{width:100%;height:80px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:8px;color:var(--t);font-family:inherit;font-size:.68rem;resize:vertical;outline:none}
+dialog textarea:focus{border-color:var(--ac)}
+.mbtn{display:flex;gap:6px;margin-top:8px;justify-content:flex-end}
+.bt{padding:6px 12px;border:none;border-radius:6px;font-family:inherit;font-size:.68rem;font-weight:600;cursor:pointer}
+.bt:active{transform:scale(.95)}.bt-p{background:var(--ac);color:#fff}.bt-g{background:var(--bg);color:var(--t2);border:1px solid var(--bd)}
+
+.toasts{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:4px;align-items:center;width:85%;max-width:300px}
+.toast{padding:8px 12px;background:var(--bg3);border:1px solid var(--bd);border-radius:8px;font-size:.68rem;box-shadow:0 8px 20px rgba(0,0,0,.4);animation:ti .3s,to .3s 2.5s forwards;text-align:center;width:100%}
+@keyframes ti{from{transform:translateY(20px);opacity:0}}
+@keyframes to{to{opacity:0;transform:translateY(10px)}}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:99999}
+.empty{text-align:center;padding:30px;color:var(--t3);font-size:.75rem}
+
+@media(max-width:480px){
+.stats{gap:3px}.sv{font-size:.95rem}.pbars{grid-template-columns:repeat(2,1fr)}
+article.tk{grid-template-columns:auto 1fr}.tk-m{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;gap:4px}
+.s-g{display:none}nav.bar{flex-direction:column}.search{min-width:100%}
+article.wk{margin-left:1px;padding-left:6px}.sync-row{flex-direction:column}.sb{width:100%}
+}
+</style>
+</head>
+<body>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div class="app">
+
+<!-- ===== HEADER ===== -->
+<header>
+<div class="badge">🖥️ Ciência da Computação • Federal 2026</div>
+<h1>ENEM 2026</h1>
+<p>2h/dia — 35min Teoria + 85min Questões</p>
+<div class="goals"><span class="gl">🎯 800+ Mat</span><span class="gl">📝 900+ Red</span><span class="gl">🧪 700+ Nat</span></div>
+</header>
+
+<!-- ===== TIMER ===== -->
+<section class="timer" aria-label="Temporizador">
+<div class="t-lbl" data-t="lbl">📖 TEORIA</div>
+<div class="t-dots"><div class="t-dot" data-t="d1"></div><div class="t-dot" data-t="d2"></div></div>
+<div class="t-disp theory" data-t="disp" role="button" tabindex="0" aria-label="Editar tempo" onclick="openEd()">35:00</div>
+<div class="t-edit" data-t="edit">
+<label for="em" class="sr-only">Min</label><input type="number" id="em" min="0" max="999" value="35">
+<span style="color:var(--t3);font-weight:700">:</span>
+<label for="es" class="sr-only">Seg</label><input type="number" id="es" min="0" max="59" value="0">
+<button type="button" class="bt bt-p" onclick="applyEd()">✓</button>
+<button type="button" class="bt bt-g" onclick="cancelEd()">✕</button>
+</div>
+<div class="t-presets">
+<button type="button" class="pre" onclick="pre(25)">25</button>
+<button type="button" class="pre" onclick="pre(35)">35</button>
+<button type="button" class="pre" onclick="pre(45)">45</button>
+<button type="button" class="pre" onclick="pre(60)">60</button>
+<button type="button" class="pre" onclick="pre(90)">90</button>
+</div>
+<div class="t-btns">
+<button type="button" class="tb tb-go" data-t="go" onclick="tTog()" aria-label="Iniciar/pausar">▶ Iniciar</button>
+<button type="button" class="tb tb-sk" onclick="tSkip()" aria-label="Pular">⏭</button>
+<button type="button" class="tb tb-rs" onclick="tRst()" aria-label="Reset">↺</button>
+</div>
+<div class="t-bar"><div class="t-bf theory" data-t="bar" style="width:100%"></div></div>
+<div class="t-td">Hoje: <b data-t="tot">0 min</b></div>
+</section>
+
+<!-- ===== STREAK ===== -->
+<aside class="streak" aria-label="Streak"><span class="s-i" aria-hidden="true">🔥</span><div><div class="s-n" data-s="n">0</div><div class="s-l">DIAS SEGUIDOS</div></div><div class="s-g" data-s="g"></div></aside>
+
+<!-- ===== STATS ===== -->
+<section class="stats" aria-label="Estatísticas">
+<div class="st"><div class="sv" data-st="total">0</div><div class="sl">Total</div></div>
+<div class="st"><div class="sv" data-st="done">0</div><div class="sl">Feitas</div></div>
+<div class="st"><div class="sv" data-st="pend">0</div><div class="sl">Pendentes</div></div>
+<div class="st"><div class="sv" data-st="today">0</div><div class="sl">Hoje</div></div>
+<div class="st"><div class="sv" data-st="red">0</div><div class="sl">Redações</div></div>
+<div class="st"><div class="sv" data-st="sim">0</div><div class="sl">Simulados</div></div>
+</section>
+
+<!-- ===== PROGRESS ===== -->
+<section class="prog" aria-label="Progresso">
+<div class="prog-top"><h2>📊 Progresso</h2><span class="prog-pct" data-pr="pct">0%</span></div>
+<div class="pbar"><div class="pbf" data-pr="bar"></div></div>
+<div class="pbars">
+<div class="pm"><div class="pm-l">🟢F1</div><div class="pm-b"><div class="pm-f" data-pr="f1"></div></div><div class="pm-p" data-pr="p1">0%</div></div>
+<div class="pm"><div class="pm-l">🟡F2</div><div class="pm-b"><div class="pm-f" data-pr="f2"></div></div><div class="pm-p" data-pr="p2">0%</div></div>
+<div class="pm"><div class="pm-l">🔵F3</div><div class="pm-b"><div class="pm-f" data-pr="f3"></div></div><div class="pm-p" data-pr="p3">0%</div></div>
+<div class="pm"><div class="pm-l">🔴F4</div><div class="pm-b"><div class="pm-f" data-pr="f4"></div></div><div class="pm-p" data-pr="p4">0%</div></div>
+</div>
+</section>
+
+<!-- ===== SYNC ===== -->
+<section class="sync" aria-label="Sincronizar">
+<h3>🔄 Sincronizar</h3>
+<div class="sync-row">
+<button type="button" class="sb" onclick="expP()">📤 Exportar</button>
+<button type="button" class="sb" onclick="showI()">📥 Importar</button>
+<button type="button" class="sb" onclick="cpC()">📋 Copiar</button>
+<button type="button" class="sb" onclick="shP()">📱 Share</button>
+</div>
+<textarea class="sc" id="sc" placeholder="Cole o código..."></textarea>
+<div class="imp" data-sy="ib">
+<button type="button" class="sb" onclick="impP()" style="background:var(--g);color:#fff;border-color:var(--g)">✅ OK</button>
+<button type="button" class="sb" onclick="hideI()">✖</button>
+</div>
+</section>
+
+<!-- ===== NAV ===== -->
+<nav class="bar" aria-label="Filtros">
+<label for="si" class="sr-only">Buscar</label>
+<input class="search" id="si" placeholder="🔍 Buscar..." oninput="draw()">
+<select class="sel" id="ff" onchange="draw()" aria-label="Fase"><option value="">Fases</option><option value="1">🟢F1</option><option value="2">🟡F2</option><option value="3">🔵F3</option><option value="4">🔴F4</option></select>
+<select class="sel" id="fm" onchange="draw()" aria-label="Matéria"><option value="">Mat.</option><option value="Mat">Mat</option><option value="Fís">Fís</option><option value="Quí">Quí</option><option value="Bio">Bio</option><option value="Hum">Hum</option><option value="Ling">Ling</option><option value="Red">Red</option></select>
+<select class="sel" id="fs" onchange="draw()" aria-label="Status"><option value="">Status</option><option value="p">Pendentes</option><option value="d">Feitas</option></select>
+<button type="button" class="nb" onclick="eAll()">📂</button>
+<button type="button" class="nb" onclick="cAll()">📁</button>
+<button type="button" class="nb" onclick="eCSV()">CSV</button>
+<button type="button" class="nb" onclick="rAll()">🔄</button>
+</nav>
+
+<!-- ===== MAIN ===== -->
+<main id="ct" aria-label="Cronograma"></main>
+</div>
+
+<!-- ===== DIALOG ===== -->
+<dialog id="dlg"><h3>📝 Anotações</h3><div class="msub" data-dl="t"></div><textarea id="nt" placeholder="Erros, dúvidas..."></textarea><div class="mbtn"><button type="button" class="bt bt-g" onclick="cDlg()">Cancelar</button><button type="button" class="bt bt-p" onclick="sN()">💾 Salvar</button></div></dialog>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script>
+// ===== DADOS =====
+// [id, semana, fase, dia, data, [mat], titulo, detalhes, tipo, pri, multi?, rest?]
+// rest = Sáb/Dom de descanso agrupado
+const D=[
+// FASE 1
+["1.1a",1,1,"Seg","2026-02-09",["Mat","Fís"],"Operações Básicas + Notação Científica","(Mat) Vírgula e Fração. (Fís) Notação Científica, Conversão.","Teoria","alta"],
+["1.1b",1,1,"Ter","2026-02-10",["Mat","Quí"],"Regra de Três + Estados Físicos","(Mat) Simples/Composta. (Quí) Mudanças de Fase.","Teoria","alta"],
+["1.1c",1,1,"Qua","2026-02-11",["Mat","Bio"],"Porcentagem + Água/Sais","(Mat) Aumentos/Descontos. (Bio) Água e Sais Minerais.","Teoria","alta"],
+["1.1d",1,1,"Qui","2026-02-12",["Hum","Ling"],"Fato x Opinião + Interpretação","(Hum) Fato x Opinião. (Ling) Interpretação Básica.","Teoria","media"],
+["1.1e",1,1,"Sex","2026-02-13",["Red","Mat"],"Estrutura Dissertativa + 20Q","(Red) Estrutura Dissertativa. (Mat) 20 Questões.","Red+Q","alta"],
+["1.1r",1,1,"Sáb/Dom","2026-02-14",["OFF"],"Descanso ou matéria atrasada","Descanso ou colocar matéria atrasada em dia.","Livre","baixa",false,true],
+
+["1.2a",2,1,"Seg","2026-02-16",["Mat","Fís"],"Razão/Proporção + Vetores","(Mat) Escala/Densidade. (Fís) Soma e Decomposição.","Teoria","alta"],
+["1.2b",2,1,"Ter","2026-02-17",["Mat","Quí"],"Potenciação + Separação Misturas","(Mat) Potenciação/Radiciação. (Quí) Separação.","Teoria","media"],
+["1.2c",2,1,"Qua","2026-02-18",["Mat","Bio"],"Equação 1ºGrau + Cadeias","(Mat) Problemas. (Bio) Cadeias/Teias.","Teoria","alta"],
+["1.2d",2,1,"Qui","2026-02-19",["Hum","Ling"],"Ética/Moral + Gêneros","(Hum) Ética/Moral. (Ling) Notícia, Artigo.","Teoria","media"],
+["1.2e",2,1,"Sex","2026-02-20",["Red","Mat"],"Projeto Texto + 20Q","(Red) Planejamento. (Mat) 20Q Razão/Proporção.","Red+Q","alta"],
+["1.2r",2,1,"Sáb/Dom","2026-02-21",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["1.3a",3,1,"Seg","2026-02-23",["Mat","Fís"],"Função 1ºGrau + Vel.Média","(Mat) Gráficos. (Fís) v=Δs/Δt.","Teoria","alta"],
+["1.3b",3,1,"Ter","2026-02-24",["Mat","Quí"],"Juros + Modelos Atômicos","(Mat) Simples/Compostos. (Quí) Bohr/Dalton.","Teoria","alta"],
+["1.3c",3,1,"Qua","2026-02-25",["Mat","Bio"],"Inequações + Ciclos Bio","(Mat) Inequações. (Bio) Água/Carbono.","Teoria","media"],
+["1.3d",3,1,"Qui","2026-02-26",["Hum","Ling"],"Cidadania + Funções Ling.","(Hum) Democracia. (Ling) Jakobson.","Teoria","media"],
+["1.3e",3,1,"Sex","2026-02-27",["Red","Mat"],"Intro/Tese + 20Q Afim","(Red) Introdução+Tese. (Mat) 20Q.","Red+Q","alta"],
+["1.3r",3,1,"Sáb/Dom","2026-02-28",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["1.4a",4,1,"Seg","2026-03-02",["Mat","Fís"],"Função 2ºGrau + MRUV","(Mat) Vértice/Raízes. (Fís) Aceleração.","Teoria","alta"],
+["1.4b",4,1,"Ter","2026-03-03",["Mat","Quí"],"Gráficos + Tab.Periódica","(Mat) Interpretação. (Quí) Tabela.","Teoria","media"],
+["1.4c",4,1,"Qua","2026-03-04",["Mat","Bio"],"Exponencial + Citologia","(Mat) Crescimento. (Bio) Membrana/Transporte.","Teoria","alta"],
+["1.4d",4,1,"Qui","2026-03-05",["Hum","Ling"],"Cultura + Variação Ling.","(Hum) Patrimônio. (Ling) Variação.","Teoria","media"],
+["1.4e",4,1,"Sex","2026-03-06",["Red","Mat"],"Desenvolvimento + 20Q Quadrática","(Red) Argumentação. (Mat) 20Q.","Red+Q","alta"],
+["1.4r",4,1,"Sáb/Dom","2026-03-07",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["1.5a",5,1,"Seg","2026-03-09",["Mat","Fís"],"Logaritmos + Gráf.Cinemática","(Mat) Definição/Propriedades. (Fís) S×t, V×t.","Teoria","alta"],
+["1.5b",5,1,"Ter","2026-03-10",["Mat","Quí"],"Função Log + Ligações","(Mat) Gráfico. (Quí) Iônica/Covalente.","Teoria","media"],
+["1.5c",5,1,"Qua","2026-03-11",["Mat","Bio"],"Estatística + Organelas","(Mat) Média/Moda/Mediana. (Bio) Organelas.","Teoria","alta"],
+["1.5d",5,1,"Qui","2026-03-12",["Hum","Ling"],"Estado/Poder + Escolas Lit.","(Hum) Sociologia. (Ling) Resumão Escolas.","Teoria","media"],
+["1.5e",5,1,"Sex","2026-03-13",["Red","Mat"],"Conclusão + 20Q Estat.","(Red) Proposta Intervenção. (Mat) 20Q.","Red+Q","alta"],
+["1.5r",5,1,"Sáb/Dom","2026-03-14",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["1.6a",6,1,"Seg","2026-03-16",["Mat","Fís"],"Tabelas + MCU","(Mat) Interpretação Tabelas. (Fís) MCU.","Teoria","alta"],
+["1.6b",6,1,"Ter","2026-03-17",["Mat","Quí"],"Desvio Padrão + Intermoleculares","(Mat) Conceito. (Quí) Solubilidade.","Teoria","media"],
+["1.6c",6,1,"Qua","2026-03-18",["Mat","Bio"],"Rev.Mat + Sínt.Proteica","(Mat) Revisão. (Bio) DNA→RNA→Proteína.","Revisão","media"],
+["1.6d",6,1,"Qui","2026-03-19",["Hum","Ling"],"Trabalho + Fig.Linguagem","(Hum) Desigualdade. (Ling) Metáfora/Ironia.","Teoria","media"],
+["1.6e",6,1,"Sex","2026-03-20",["Red","Rev"],"Texto 1 + Erros Semana","(Red) Texto Completo 1. (Rev) Erros da semana.","Red+Rev","alta"],
+["1.6r",6,1,"Sáb/Dom","2026-03-21",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["1.7a",7,1,"Seg","2026-03-23",["Fís","Mat"],"Newton 1ª/2ª + Ex.Mistos","(Fís) F=ma. (Mat) Exercícios Mistos.","Teoria","alta"],
+["1.7b",7,1,"Ter","2026-03-24",["Fís","Quí"],"3ª Lei + Ácidos/Bases","(Fís) Ação/Reação. (Quí) pH.","Teoria","alta"],
+["1.7c",7,1,"Qua","2026-03-25",["Fís","Bio"],"Atrito + 1ª Lei Mendel","(Fís) Estático/Cinético. (Bio) Genética.","Teoria","alta"],
+["1.7d",7,1,"Qui","2026-03-26",["Hum","Ling"],"Globalização + Poesia","(Hum) Geopolítica. (Ling) Interpretar.","Teoria","media"],
+["1.7e",7,1,"Sex","2026-03-27",["Red","Mat"],"Texto 2 + Rev.Rápida","(Red) Texto 2. (Mat) Revisão.","Red+Rev","alta"],
+["1.7f",7,1,"Sáb","2026-03-28",["Sim"],"🚨 Simulado Diagnóstico (15+15Q)","15Q Mat + 15Q Natureza.","Simulado","alta"],
+["1.7g",7,1,"Dom","2026-03-29",["Rev"],"🔍 Correção e Análise","Classificar cada erro.","Revisão","alta"],
+
+["1.8x",8,1,"Seg a Sex","2026-03-30",["Mat"],"🎯 SEMANA FOCO: ENEM 2021/2022","Resolver provas Mat ENEM 2021 e 2022. Só assuntos vistos. Zero teoria.","Questões","alta",true],
+["1.8r",8,1,"Sáb/Dom","2026-04-04",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+// FASE 2
+["2.9a",9,2,"Seg","2026-04-06",["Mat","Fís"],"Ângulos/Triângulos + Trabalho","(Mat) Triângulos. (Fís) W=Fd.cosθ.","Teoria","alta"],
+["2.9b",9,2,"Ter","2026-04-07",["Mat","Quí"],"Semelhança + Sais/Óxidos","(Mat) Tales. (Quí) Chuva Ácida.","Teoria","media"],
+["2.9c",9,2,"Qua","2026-04-08",["Mat","Bio"],"Pitágoras + Doenças","(Mat) Pitágoras. (Bio) Vírus/Bactérias.","Teoria","alta"],
+["2.9d",9,2,"Qui","2026-04-09",["Hum","Ling"],"Rev.Industriais + Modernismo 1ª","(Hum) Impacto Social. (Ling) Oswald.","Teoria","media"],
+["2.9e",9,2,"Sex","2026-04-10",["Red","Mat"],"Texto 3 + 20Q Geo Plana","(Red) Texto 3. (Mat) 20Q.","Red+Q","alta"],
+["2.9r",9,2,"Sáb/Dom","2026-04-11",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["2.10a",10,2,"Seg","2026-04-13",["Mat","Fís"],"Áreas + Energia","(Mat) Quadriláteros. (Fís) Ec/Ep.","Teoria","alta"],
+["2.10b",10,2,"Ter","2026-04-14",["Mat","Quí"],"Áreas Circ. + Balanceamento","(Mat) Círculo/Setor. (Quí) Equações.","Teoria","media"],
+["2.10c",10,2,"Qua","2026-04-15",["Mat","Bio"],"Polígonos + Protozooses","(Mat) Regulares. (Bio) Saneamento.","Teoria","media"],
+["2.10d",10,2,"Qui","2026-04-16",["Hum","Ling"],"Urbanização + Modernismo 2ª","(Hum) Segregação. (Ling) Drummond.","Teoria","media"],
+["2.10e",10,2,"Sex","2026-04-17",["Red","Mat"],"Texto 4 + 20Q Áreas","","Red+Q","alta"],
+["2.10r",10,2,"Sáb/Dom","2026-04-18",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["2.11a",11,2,"Seg","2026-04-20",["Mat","Fís"],"Prismas + Conserv.Energia","(Mat) Volume. (Fís) Ec+Ep=cte.","Teoria","alta"],
+["2.11b",11,2,"Ter","2026-04-21",["Mat","Quí"],"Cilindros + Leis Ponderais","","Teoria","media"],
+["2.11c",11,2,"Qua","2026-04-22",["Mat","Bio"],"Pirâmides/Cones + Digestório","","Teoria","media"],
+["2.11d",11,2,"Qui","2026-04-23",["Hum","Ling"],"Agropecuária + Arte Contemp.","","Teoria","media"],
+["2.11e",11,2,"Sex","2026-04-24",["Red","Mat"],"Texto 5 + 20Q Prismas","","Red+Q","alta"],
+["2.11r",11,2,"Sáb/Dom","2026-04-25",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["2.12a",12,2,"Seg","2026-04-27",["Mat","Fís"],"Esferas + Impulso","","Teoria","media"],
+["2.12b",12,2,"Ter","2026-04-28",["Mat","Quí"],"Projeção Ortogonal + Esteq.","","Teoria","alta"],
+["2.12c",12,2,"Qua","2026-04-29",["Mat","Bio"],"Troncos + Circulatório","","Teoria","media"],
+["2.12d",12,2,"Qui","2026-04-30",["Hum","Ling"],"Migrações + Argumentação","","Teoria","media"],
+["2.12e",12,2,"Sex","2026-05-01",["Red","Mat"],"Texto 6 + 20Q Projeção","","Red+Q","alta"],
+["2.12r",12,2,"Sáb/Dom","2026-05-02",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["2.13a",13,2,"Seg","2026-05-04",["Mat","Fís"],"Trigono + Hidrostática","(Mat) Sen/Cos/Tg. (Fís) Pressão.","Teoria","alta"],
+["2.13b",13,2,"Ter","2026-05-05",["Mat","Quí"],"Senos/Cossenos + Esteq.II","","Teoria","media"],
+["2.13c",13,2,"Qua","2026-05-06",["Mat","Bio"],"Ciclo Trigo + Respiratório","","Teoria","media"],
+["2.13d",13,2,"Qui","2026-05-07",["Hum","Ling"],"Totalitarismo + Vanguardas","","Teoria","media"],
+["2.13e",13,2,"Sex","2026-05-08",["Red","Mat"],"Texto 7 + 20Q Trigono","","Red+Q","alta"],
+["2.13r",13,2,"Sáb/Dom","2026-05-09",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["2.14a",14,2,"Seg","2026-05-11",["Mat","Fís"],"Probabilidade + Empuxo","","Teoria","alta"],
+["2.14b",14,2,"Ter","2026-05-12",["Mat","Quí"],"União/Intersecção + Soluções","","Teoria","alta"],
+["2.14c",14,2,"Qua","2026-05-13",["Mat","Bio"],"Prob.Condicional + Imunologia","(Bio) Vacina x Soro!","Teoria","alta"],
+["2.14d",14,2,"Qui","2026-05-14",["Hum","Ling"],"Brasil Colônia + Rev Funções","","Teoria","media"],
+["2.14e",14,2,"Sex","2026-05-15",["Red","Mat"],"Texto 8 + 20Q Prob.","","Red+Q","alta"],
+["2.14r",14,2,"Sáb/Dom","2026-05-16",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["2.15a",15,2,"Seg","2026-05-18",["Mat","Fís"],"PFC + Dilatação","","Teoria","alta"],
+["2.15b",15,2,"Ter","2026-05-19",["Mat","Quí"],"Permutação + Termoquímica","","Teoria","media"],
+["2.15c",15,2,"Qua","2026-05-20",["Mat","Bio"],"Arranjo x Combinação + Evolução","","Teoria","alta"],
+["2.15d",15,2,"Qui","2026-05-21",["Hum","Ling"],"Escravidão + Coesão","","Teoria","media"],
+["2.15e",15,2,"Sex","2026-05-22",["Red","Mat"],"Texto 9 + 20Q PFC","","Red+Q","alta"],
+["2.15r",15,2,"Sáb/Dom","2026-05-23",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["2.16a",16,2,"Seg","2026-05-25",["Mat","Fís"],"Comb.Avançada + Calorimetria","(Fís) Q=mcΔT.","Teoria","alta"],
+["2.16b",16,2,"Ter","2026-05-26",["Mat","Quí"],"Rev Prob+Comb + Hess","","Revisão","media"],
+["2.16c",16,2,"Qua","2026-05-27",["Mat","Bio"],"PA + Biotecnologia","","Teoria","alta"],
+["2.16d",16,2,"Qui","2026-05-28",["Hum","Ling"],"Era Vargas + Publicidade","","Teoria","media"],
+["2.16e",16,2,"Sex","2026-05-29",["Red","Rev"],"Texto 10 + Rev.Geral","","Red+Rev","alta"],
+["2.16f",16,2,"Sáb","2026-05-30",["Sim"],"🚨 Simulado Geo/Prob/Comb","","Simulado","alta"],
+["2.16g",16,2,"Dom","2026-05-31",["Rev"],"🔍 Correção Detalhada","","Revisão","alta"],
+
+["2.17a",17,2,"Seg","2026-06-01",["Mat","Fís"],"PG + Termodinâmica","","Teoria","alta"],
+["2.17b",17,2,"Ter","2026-06-02",["Mat","Quí"],"Mat Financeira + Le Chatelier","","Teoria","alta"],
+["2.17c",17,2,"Qua","2026-06-03",["Mat","Bio"],"Sist.Lineares + Meio Ambiente","","Teoria","alta"],
+["2.17d",17,2,"Qui","2026-06-04",["Hum","Ling"],"Ditadura + Jornalismo","","Teoria","media"],
+["2.17e",17,2,"Sex","2026-06-05",["Rev"],"Revisão Mat+Natureza","","Revisão","alta"],
+["2.17f",17,2,"Sáb","2026-06-06",["Sim"],"🚨 Simulado Mat+Nat (45Q)","","Simulado","alta"],
+["2.17g",17,2,"Dom","2026-06-07",["Rev"],"🔍 Correção Detalhada","","Revisão","alta"],
+
+["2.18a",18,2,"Seg","2026-06-08",["Mat","Fís"],"Geo Analítica + Espelhos","","Teoria","media"],
+["2.18b",18,2,"Ter","2026-06-09",["Mat","Quí"],"Circunferência + pH","","Teoria","media"],
+["2.18c",18,2,"Qua","2026-06-10",["Mat","Bio"],"Posições Relativas + Botânica","","Teoria","baixa"],
+["2.18d",18,2,"Qui","2026-06-11",["Hum","Ling"],"Guerra Fria + Lit.Contemp.","","Teoria","media"],
+["2.18e",18,2,"Sex","2026-06-12",["Red"],"Texto 11","","Redação","alta"],
+["2.18f",18,2,"Sáb","2026-06-13",["Sim"],"🚨 Simulado Hum+Ling (45Q)","","Simulado","alta"],
+["2.18g",18,2,"Dom","2026-06-14",["Rev"],"🔍 Correção Detalhada","","Revisão","alta"],
+
+["2.19x",19,2,"Seg a Sex","2026-06-15",["Rev"],"⚠️ RECUPERAÇÃO ATIVA","Refazer erros simulados. SEM matéria nova.","Revisão","alta",true],
+["2.19r",19,2,"Sáb/Dom","2026-06-20",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["2.20a",20,2,"Seg","2026-06-22",["Fís","Mat"],"Ondas (v=λf) + Rev Funções","","Teoria","alta"],
+["2.20b",20,2,"Ter","2026-06-23",["Fís","Quí"],"Fenômenos Ondas + Pilhas","","Teoria","alta"],
+["2.20c",20,2,"Qua","2026-06-24",["Fís","Bio"],"Acústica + Excretor/Nervoso","","Teoria","media"],
+["2.20d",20,2,"Qui","2026-06-25",["Hum","Ling"],"Meio Ambiente + Repertório","","Teoria","media"],
+["2.20e",20,2,"Sex","2026-06-26",["Red","Fís"],"Texto 12 + 20Q Ondas","","Red+Q","alta"],
+["2.20r",20,2,"Sáb/Dom","2026-06-27",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+// FASE 3
+["3.21a",21,3,"Seg","2026-06-29",["Fís","Mat"],"Eletrostática + Matrizes","","Teoria","alta"],
+["3.21b",21,3,"Ter","2026-06-30",["Fís","Quí"],"Campo/Potencial + Eletrólise","","Teoria","media"],
+["3.21c",21,3,"Qua","2026-07-01",["Fís","Bio"],"Poder Pontas + Tipos Sang.","","Teoria","media"],
+["3.21d",21,3,"Qui","2026-07-02",["Hum","Ling"],"Constituições + Inglês","","Teoria","media"],
+["3.21e",21,3,"Sex","2026-07-03",["Red","Fís"],"Texto 13 + 15Q Eletrost.","","Red+Q","alta"],
+["3.21r",21,3,"Sáb/Dom","2026-07-04",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["3.22a",22,3,"Seg","2026-07-06",["Fís","Mat"],"Corrente/Potência + Rev Geo","(Fís) Chuveiro.","Teoria","alta"],
+["3.22b",22,3,"Ter","2026-07-07",["Fís","Quí"],"Ohm + Orgânica Cadeias","(Fís) V=Ri. (Quí) Carbonos.","Teoria","alta"],
+["3.22c",22,3,"Qua","2026-07-08",["Fís","Bio"],"Conta Luz + Rev Ecologia","","Teoria","alta"],
+["3.22d",22,3,"Qui","2026-07-09",["Hum","Ling"],"Mov.Sociais + Arte BR","","Teoria","media"],
+["3.22e",22,3,"Sex","2026-07-10",["Red","Fís"],"Texto 14 + 20Q Potência","","Red+Q","alta"],
+["3.22r",22,3,"Sáb/Dom","2026-07-11",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["3.23a",23,3,"Seg","2026-07-13",["Fís","Mat"],"Série/Paralelo + Rev Geo Esp.","","Teoria","alta"],
+["3.23b",23,3,"Ter","2026-07-14",["Fís","Quí"],"Geradores + HC/Álcool","","Teoria","alta"],
+["3.23c",23,3,"Qua","2026-07-15",["Fís","Bio"],"Medidores + Rev Citologia","","Teoria","media"],
+["3.23d",23,3,"Qui","2026-07-16",["Hum","Ling"],"Geopolítica + Fig.Linguagem","","Teoria","media"],
+["3.23e",23,3,"Sex","2026-07-17",["Red","Fís"],"Texto 15 + 20Q Circuitos","","Red+Q","alta"],
+["3.23r",23,3,"Sáb/Dom","2026-07-18",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["3.24a",24,3,"Seg","2026-07-20",["Fís","Mat"],"Campo Magnético + Rev Estat.","","Teoria","alta"],
+["3.24b",24,3,"Ter","2026-07-21",["Fís","Quí"],"Faraday + Fun.Oxigenadas","(Fís) Usinas!","Teoria","alta"],
+["3.24c",24,3,"Qua","2026-07-22",["Fís","Bio"],"Transformadores + Endócrino","","Teoria","media"],
+["3.24d",24,3,"Qui","2026-07-23",["Hum","Ling"],"Fil.Ciência + Tec/Sociedade","","Teoria","media"],
+["3.24e",24,3,"Sex","2026-07-24",["Red","Fís"],"Texto 16 + 15Q Eletromag.","","Red+Q","alta"],
+["3.24r",24,3,"Sáb/Dom","2026-07-25",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["3.25a",25,3,"Seg","2026-07-27",["Fís","Mat"],"Lentes/Olho + Rev Prob.","","Teoria","media"],
+["3.25b",25,3,"Ter","2026-07-28",["Fís","Quí"],"Refração + Nitrog./Polímeros","","Teoria","media"],
+["3.25c",25,3,"Qua","2026-07-29",["Fís","Bio"],"Rev Ondulatória + Genética","","Revisão","media"],
+["3.25d",25,3,"Qui","2026-07-30",["Hum","Ling"],"Patrimônio + Rev Lit.","","Teoria","media"],
+["3.25e",25,3,"Sex","2026-07-31",["Red","Quí"],"Texto 17 + Quí Ambiental","","Red+Q","alta"],
+["3.25r",25,3,"Sáb/Dom","2026-08-01",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["3.26x",26,3,"Seg a Sex","2026-08-03",["Quí","Rev"],"Semana 26: Reforço + Isomeria","Estudo normal + Isomeria.","Teoria","media",true],
+["3.26f",26,3,"Sáb","2026-08-08",["Sim"],"🚨 Simulado Mat (45Q)","","Simulado","alta"],
+["3.26g",26,3,"Dom","2026-08-09",["Rev"],"🔍 Correção","","Revisão","alta"],
+
+["3.27x",27,3,"Seg a Sex","2026-08-10",["Quí","Rev"],"Semana 27: Reações Orgânicas","Saponificação, combustão.","Teoria","media",true],
+["3.27f",27,3,"Sáb","2026-08-15",["Sim"],"🚨 Simulado Natureza (45Q)","","Simulado","alta"],
+["3.27g",27,3,"Dom","2026-08-16",["Rev"],"🔍 Correção","","Revisão","alta"],
+
+["3.28x",28,3,"Seg a Sex","2026-08-17",["Quí","Rev"],"Semana 28: Quí Ambiental","Petróleo, efeito estufa.","Teoria","alta",true],
+["3.28f",28,3,"Sáb","2026-08-22",["Sim"],"🚨 Simulado Linguagens (45Q)","","Simulado","alta"],
+["3.28g",28,3,"Dom","2026-08-23",["Rev"],"🔍 Correção","","Revisão","alta"],
+
+["3.29x",29,3,"Seg a Sex","2026-08-24",["Bio","Hum","Rev"],"Semana 29: Rev Bio + Humanas","Leitura de Resumos.","Revisão","media",true],
+["3.29r",29,3,"Sáb/Dom","2026-08-30",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+// FASE 4
+["4.30x",30,4,"Seg a Sex","2026-08-31",["Mat","Red"],"Semana 30: Q soltas + 1 Redação","","Q+Red","alta",true],
+["4.30f",30,4,"Sáb","2026-09-05",["Sim"],"🚨 ENEM 2022 (Mat+Nat)","","Simulado","alta"],
+["4.30g",30,4,"Dom","2026-09-06",["Rev"],"🔍 Correção ENEM 2022","","Revisão","alta"],
+
+["4.31x",31,4,"Seg a Sex","2026-09-07",["Mat","Red"],"Semana 31: Q soltas + 1 Redação","","Q+Red","alta",true],
+["4.31f",31,4,"Sáb","2026-09-12",["Sim"],"🚨 ENEM 2023 (Mat+Nat)","","Simulado","alta"],
+["4.31g",31,4,"Dom","2026-09-13",["Rev"],"🔍 Correção ENEM 2023","","Revisão","alta"],
+
+["4.32x",32,4,"Seg a Sex","2026-09-14",["Mat","Red"],"Semana 32: Q soltas + 1 Redação","","Q+Red","alta",true],
+["4.32f",32,4,"Sáb","2026-09-19",["Sim"],"🚨 ENEM 2024 (Mat+Nat)","","Simulado","alta"],
+["4.32g",32,4,"Dom","2026-09-20",["Rev"],"🔍 Correção ENEM 2024","","Revisão","alta"],
+
+["4.33x",33,4,"Seg a Sex","2026-09-21",["Rev"],"Semana 33: Revisão de Lacunas","APENAS os conteúdos mais errados.","Revisão","alta",true],
+["4.33r",33,4,"Sáb/Dom","2026-09-27",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["4.34x",34,4,"Seg a Sex","2026-09-28",["Mat","Fís"],"Semana 34: Rev Fórmulas","Áreas/Volumes + Elétrica.","Revisão","alta",true],
+["4.34r",34,4,"Sáb/Dom","2026-10-04",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["4.35x",35,4,"Seg a Sex","2026-10-05",["Quí","Bio"],"Semana 35: Rev Quí+Bio","Ambiental + Ecologia.","Revisão","alta",true],
+["4.35r",35,4,"Sáb/Dom","2026-10-11",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["4.36x",36,4,"Seg a Sex","2026-10-12",["Sim"],"Semana 36: Treino Estratégia","Treino tempo de prova.","Estratégia","alta",true],
+["4.36f",36,4,"Sáb","2026-10-17",["Sim"],"🚨 Simulado Cronometrado Final","","Simulado","alta"],
+["4.36g",36,4,"Dom","2026-10-18",["Rev"],"🔍 Última Correção","","Revisão","alta"],
+
+["4.37x",37,4,"Seg a Sex","2026-10-19",["Rev","Red"],"Semana 37: Resumos + Red.Nota 1000","Leitura leve.","Leitura","media",true],
+["4.37r",37,4,"Sáb/Dom","2026-10-25",["OFF"],"Descanso ou matéria atrasada","","Livre","baixa",false,true],
+
+["4.38x",38,4,"Seg a Qua","2026-10-26",["OFF"],"🏖️ Semana OFF","Revisão levíssima. Sono. Água.","Descanso","baixa",true],
+["4.38d",38,4,"Qui","2026-10-29",["OFF"],"🏖️ VÉSPERA — NÃO ESTUDE","Caneta preta, docs. DURMA.","Preparação","alta"],
+];
+
+const T=D.map(d=>({id:d[0],sem:d[1],fase:d[2],dia:d[3],data:d[4],mat:d[5],tit:d[6],det:d[7]||'',tipo:d[8],pri:d[9],multi:!!d[10],rest:!!d[11]}));
+const F={1:{e:'🟢',n:'FASE 1: Base Lógica',s:'Fev–Mar',c:'var(--g)'},2:{e:'🟡',n:'FASE 2: Geometria e Mecânica',s:'Abr–Jun',c:'var(--y)'},3:{e:'🔵',n:'FASE 3: Diferencial',s:'Jul–Ago',c:'var(--ac)'},4:{e:'🔴',n:'FASE 4: Deploy',s:'Set–Out',c:'var(--r)'}};
+
+// ===== STATE =====
+let dn=J('cc_d',{}),nt=J('cc_n',{}),sk=J('cc_s',{c:0,d:[]}),oP=J('cc_p',{1:1,2:1,3:1,4:1}),oW=J('cc_w',{}),xp={},mI=null;
+function J(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch{return d}}
+function S(){['cc_d','cc_n','cc_s','cc_p','cc_w'].forEach((k,i)=>localStorage.setItem(k,JSON.stringify([dn,nt,sk,oP,oW][i])))}
+const $=s=>document.querySelector(s);
+
+// ===== AUDIO BEEP =====
+let audioCtx;
+function beep(freq=880,dur=.3,type='sine'){
+    if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.type=type;o.frequency.value=freq;g.gain.value=.3;
+    o.connect(g);g.connect(audioCtx.destination);
+    o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);
+    o.stop(audioCtx.currentTime+dur)
+}
+function alarm(){beep(880,.15);setTimeout(()=>beep(1100,.15),200);setTimeout(()=>beep(880,.15),400);setTimeout(()=>beep(1100,.2),600)}
+
+// ===== TIMER =====
+let tPh='theory',tSc=35*60,tMx=35*60,tRn=false,tIn=null,tEd=false,tTh=35*60,tPr=85*60;
+let tSt=parseInt(J('cc_ts_'+new Date().toISOString().split('T')[0],0));
+
+function tTog(){if(tPh==='done'){tRst();return}
+if(tRn){clearInterval(tIn);tRn=false;$('[data-t="go"]').textContent='▶ Continuar';$('[data-t="go"]').classList.remove('run')}
+else{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();tRn=true;$('[data-t="go"]').textContent='⏸ Pausar';$('[data-t="go"]').classList.add('run');tIn=setInterval(tick,1000)}}
+
+function tick(){tSc--;tSt++;localStorage.setItem('cc_ts_'+new Date().toISOString().split('T')[0],tSt);
+if(tSc<=0){if(tPh==='theory'){tPh='practice';tSc=tPr;tMx=tPr;alarm();toast('📝 Teoria ok! QUESTÕES!');try{navigator.vibrate([200,100,200])}catch{}}
+else{tPh='done';tRn=false;clearInterval(tIn);alarm();setTimeout(alarm,1000);toast('🏆 Sessão completa!');confetti();try{navigator.vibrate([300,200,300,200,300])}catch{};const td=new Date().toISOString().split('T')[0];if(!sk.d.includes(td)){sk.d.push(td);S()}upD()}}rT()}
+
+function tSkip(){if(tPh==='theory'){tPh='practice';tSc=tPr;tMx=tPr;beep();toast('⏭ Questões!')}else if(tPh==='practice'){tPh='done';tRn=false;clearInterval(tIn);beep();toast('⏭ Fim')}rT()}
+function tRst(){clearInterval(tIn);tRn=false;tPh='theory';tSc=tTh;tMx=tTh;$('[data-t="go"]').textContent='▶ Iniciar';$('[data-t="go"]').classList.remove('run');rT()}
+function openEd(){if(tRn)return;tEd=true;$('[data-t="edit"]').classList.add('show');document.getElementById('em').value=Math.floor(tSc/60);document.getElementById('es').value=tSc%60;$('[data-t="disp"]').classList.add('editing');document.getElementById('em').focus()}
+function applyEd(){const m=parseInt(document.getElementById('em').value)||0,s=parseInt(document.getElementById('es').value)||0,tot=m*60+s;if(tPh==='theory'){tSc=tot;tMx=tot;tTh=tot}else{tSc=tot;tMx=tot;tPr=tot}cancelEd();rT();toast('⏱️ Atualizado!')}
+function cancelEd(){tEd=false;$('[data-t="edit"]').classList.remove('show');$('[data-t="disp"]').classList.remove('editing')}
+function pre(m){if(tRn)return;const tot=m*60;if(tPh==='theory'){tSc=tot;tMx=tot;tTh=tot}else{tSc=tot;tMx=tot;tPr=tot}rT();toast(`⏱️ ${m}min`)}
+function rT(){const d=$('[data-t="disp"]'),mn=Math.floor(Math.abs(tSc)/60),sc=Math.abs(tSc)%60,ng=tSc<0?'-':'';d.textContent=`${ng}${String(mn).padStart(2,'0')}:${String(sc).padStart(2,'0')}`;d.className='t-disp '+(tSc<0?'overtime':tPh==='done'?'practice':tPh)+(tEd?' editing':'');$('[data-t="lbl"]').textContent=tPh==='theory'?`📖 TEORIA (${Math.floor(tTh/60)}min)`:tPh==='practice'?`📝 QUESTÕES (${Math.floor(tPr/60)}min)`:'✅ COMPLETA!';$('[data-t="d1"]').className='t-dot'+(tPh==='theory'?' at':tPh!=='theory'?' dn':'');$('[data-t="d2"]').className='t-dot'+(tPh==='practice'?' ap':tPh==='done'?' dn':'');const bar=$('[data-t="bar"]'),pct=tMx>0?Math.max(0,(tSc/tMx)*100):0;bar.style.width=pct+'%';bar.className='t-bf '+(tPh==='done'?'practice':tPh);if(tPh==='done'){$('[data-t="go"]').textContent='↺ Nova';$('[data-t="go"]').classList.remove('run')}$('[data-t="tot"]').textContent=Math.floor(tSt/60)+' min'}
+
+// ===== SYNC =====
+function expP(){const d={v:3,dn,nt,sk,ts:Date.now()};document.getElementById('sc').value=btoa(unescape(encodeURIComponent(JSON.stringify(d))));document.getElementById('sc').classList.add('show');document.getElementById('sc').readOnly=true;$('[data-sy="ib"]').classList.remove('show');toast('📤 Código gerado!')}
+function showI(){const e=document.getElementById('sc');e.value='';e.classList.add('show');e.readOnly=false;e.focus();$('[data-sy="ib"]').classList.add('show')}
+function hideI(){document.getElementById('sc').classList.remove('show');$('[data-sy="ib"]').classList.remove('show')}
+function impP(){try{const r=document.getElementById('sc').value.trim(),j=JSON.parse(decodeURIComponent(escape(atob(r))));if(!j.dn&&!j.done)throw 0;const src=j.dn||j.done;const n=Object.keys(src).length;if(!confirm(`Importar ${n} tarefas?`))return;dn=src;nt=j.nt||j.notes||{};sk=j.sk||j.strk||{c:0,d:[]};S();hideI();draw();toast(`✅ ${n} importadas!`)}catch{toast('❌ Código inválido!')}}
+function cpC(){const e=document.getElementById('sc');if(!e.value)expP();navigator.clipboard?navigator.clipboard.writeText(e.value).then(()=>toast('📋 Copiado!')):toast('Copie manualmente')}
+function shP(){expP();const c=document.getElementById('sc').value;navigator.share?navigator.share({title:'ENEM2026',text:c}).catch(()=>{}):cpC()}
+
+// ===== DRAW =====
+function fil(){const s=document.getElementById('si').value.toLowerCase(),f=document.getElementById('ff').value,m=document.getElementById('fm').value,st=document.getElementById('fs').value;return T.filter(t=>{if(s&&!t.tit.toLowerCase().includes(s)&&!t.det.toLowerCase().includes(s))return!1;if(f&&t.fase!=f)return!1;if(m&&!t.mat.includes(m))return!1;if(st==='d'&&!dn[t.id])return!1;if(st==='p'&&dn[t.id])return!1;return!0})}
+
+function draw(){
+const tasks=fil(),c=document.getElementById('ct'),g={};
+tasks.forEach(t=>{if(!g[t.fase])g[t.fase]={};if(!g[t.fase][t.sem])g[t.fase][t.sem]=[];g[t.fase][t.sem].push(t)});
+let h='';
+[1,2,3,4].forEach(fn=>{if(!g[fn])return;const f=F[fn],ids=Object.values(g[fn]).flat().map(t=>t.id),dc=ids.filter(id=>dn[id]).length,pct=ids.length?Math.round(dc/ids.length*100):0,op=oP[fn]!==false;
+h+=`<section class="ph ${op?'':'cl'}" data-p="${fn}"><div class="ph-h" role="button" tabindex="0" onclick="tP(${fn})" aria-expanded="${op}"><div class="ph-e">${f.e}</div><div class="ph-i"><div class="ph-t">${f.n}</div><div class="ph-s">${f.s}</div></div><span class="ph-c" style="color:${f.c}">${dc}/${ids.length}·${pct}%</span><span class="ph-a">▼</span></div><div class="ph-b" style="max-height:${op?'999999px':'0'};opacity:${op?1:0}">`;
+Object.keys(g[fn]).sort((a,b)=>a-b).forEach(w=>{const wt=g[fn][w],wd=wt.filter(t=>dn[t.id]).length,wk=fn+'-'+w,wo=oW[wk]!==false,wc=wd===wt.length,d1=fmt(wt[0].data),d2=fmt(wt[wt.length-1].data);
+h+=`<article class="wk ${wo?'':'cl'}"><div class="wk-h" role="button" tabindex="0" onclick="tW('${wk}')" aria-expanded="${wo}"><div class="wk-d ${wc?'cpl':''}" style="background:${f.c}"></div><span class="wk-t">Semana ${w}</span><span class="wk-bg">${d1}→${d2}</span><span class="wk-bg ${wc?'wd':''}">${wd}/${wt.length}✓</span><span class="wk-ar">▼</span></div><div class="wk-b" style="max-height:${wo?'999999px':'0'};opacity:${wo?1:0}">`;
+wt.forEach(t=>{const d2=dn[t.id],ex=xp[t.id],hn=nt[t.id],isSm=t.mat.includes('Sim')||t.tipo==='Simulado';
+h+=`<article class="tk p-${t.pri} ${d2?'done':''} ${ex?'exp':''} ${t.multi?'multi':''} ${isSm?'sim':''} ${t.rest?'rest':''}" data-id="${t.id}" onclick="tE('${t.id}')"><button type="button" class="ck ${d2?'on':''}" onclick="event.stopPropagation();ck('${t.id}')" aria-label="Check"></button><div class="tk-c"><h4>${t.tit}</h4>${t.det?`<p>${t.det}</p>`:''}<div class="tk-tags">${t.mat.map(m=>`<span class="tg tg-${m}">${m}</span>`).join('')}<span class="tg" style="background:rgba(124,92,252,.05);color:var(--ac2)">${t.tipo}</span></div></div><div class="tk-m"><span class="dy">${t.dia}</span><time datetime="${t.data}">${fmt(t.data)}</time><button type="button" class="nbtn ${hn?'has':''}" onclick="event.stopPropagation();oM('${t.id}')">📝</button></div></article>`});
+h+=`</div></article>`});h+=`</div></section>`});
+c.innerHTML=h||'<div class="empty">🔍 Nada encontrado</div>';upD()}
+
+function ck(id){const b=document.querySelector(`[data-id="${id}"] .ck`);if(dn[id]){delete dn[id];toast('⬜ Desmarcada')}else{dn[id]=Date.now();if(b)b.classList.add('on');beep(660,.1);toast('✅ Concluída!');const td=new Date().toISOString().split('T')[0];if(!sk.d.includes(td))sk.d.push(td);const n=Object.keys(dn).length;if(n%10===0){toast(`🔥 ${n} tarefas!`);confetti()}if(n===T.length){toast('🏆 100%!!');confetti();confetti()}}S();draw()}
+function tE(id){xp[id]=!xp[id];draw()}
+function tP(n){oP[n]=oP[n]===false;S();draw()}
+function tW(k){oW[k]=oW[k]===false;S();draw()}
+function eAll(){[1,2,3,4].forEach(n=>oP[n]=true);T.forEach(t=>oW[t.fase+'-'+t.sem]=true);S();draw()}
+function cAll(){[1,2,3,4].forEach(n=>oP[n]=false);Object.keys(oW).forEach(k=>oW[k]=false);S();draw()}
+
+function upD(){const total=T.length,d=Object.keys(dn).length,pct=total?Math.round(d/total*100):0,td=new Date().toISOString().split('T')[0];
+$('[data-st="total"]').textContent=total;$('[data-st="done"]').textContent=d;$('[data-st="pend"]').textContent=total-d;
+$('[data-st="today"]').textContent=T.filter(t=>t.data===td).length;
+$('[data-st="red"]').textContent=T.filter(t=>t.mat.includes('Red')&&dn[t.id]).length;
+$('[data-st="sim"]').textContent=T.filter(t=>(t.mat.includes('Sim')||t.tipo==='Simulado')&&dn[t.id]).length;
+$('[data-pr="pct"]').textContent=pct+'%';$('[data-pr="bar"]').style.width=pct+'%';
+[1,2,3,4].forEach(f=>{const ft=T.filter(t=>t.fase===f),fd=ft.filter(t=>dn[t.id]).length,fp=ft.length?Math.round(fd/ft.length*100):0;$(`[data-pr="f${f}"]`).style.width=fp+'%';$(`[data-pr="p${f}"]`).textContent=fp+'%'});
+const dates=sk.d.sort();let sc=0;const now=new Date();for(let i=0;i<60;i++){const d=new Date(now);d.setDate(now.getDate()-i);if(dates.includes(d.toISOString().split('T')[0]))sc++;else if(i>0)break}
+sk.c=sc;$('[data-s="n"]').textContent=sc;let dots='';for(let i=20;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);const ds=d.toISOString().split('T')[0];dots+=`<div class="s-c ${dates.includes(ds)?'on':''} ${i===0?'now':''}"></div>`}$('[data-s="g"]').innerHTML=dots;rT()}
+
+function oM(id){mI=id;$('[data-dl="t"]').textContent=T.find(t=>t.id===id).tit;document.getElementById('nt').value=nt[id]||'';document.getElementById('dlg').showModal()}
+function cDlg(){document.getElementById('dlg').close();mI=null}
+function sN(){const v=document.getElementById('nt').value;if(v.trim())nt[mI]=v;else delete nt[mI];S();cDlg();toast('💾 Salvo!');draw()}
+function eCSV(){let c='\uFEFF"Sem","Fase","Dia","Data","Mat","Título","Det","Tipo","Pri","Feito"\n';T.forEach(t=>{c+=`${t.sem},"${F[t.fase].n}","${t.dia}","${t.data}","${t.mat.join(',')}","${t.tit}","${t.det.replace(/"/g,'""')}","${t.tipo}","${t.pri}","${dn[t.id]?'TRUE':'FALSE'}"\n`});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/csv;charset=utf-8;'}));a.download='enem2026_cc.csv';a.click();toast('📥 CSV!')}
+function rAll(){if(!confirm('⚠️ Apagar TUDO?'))return;dn={};nt={};sk={c:0,d:[]};localStorage.clear();S();draw();toast('🔄 Reset!')}
+function fmt(d){const[y,m,dd]=d.split('-');return dd+'/'+m}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.getElementById('toasts').appendChild(t);setTimeout(()=>t.remove(),3000)}
+function confetti(){const cv=document.getElementById('confetti'),ctx=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;const ps=[],cl=['#22c55e','#eab308','#7c5cfc','#ef4444','#f97316','#06b6d4','#ec4899'];for(let i=0;i<80;i++)ps.push({x:Math.random()*cv.width,y:-10-Math.random()*200,vx:(Math.random()-.5)*7,vy:Math.random()*3+2,c:cl[~~(Math.random()*cl.length)],s:Math.random()*4+2,r:Math.random()*360,rs:(Math.random()-.5)*10,l:1});(function go(){ctx.clearRect(0,0,cv.width,cv.height);let a=false;ps.forEach(p=>{if(p.l<=0)return;a=true;p.x+=p.vx;p.vy+=.1;p.y+=p.vy;p.r+=p.rs;p.l-=.007;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r*Math.PI/180);ctx.globalAlpha=p.l;ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);ctx.restore()});if(a)requestAnimationFrame(go);else ctx.clearRect(0,0,cv.width,cv.height)})()}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){cDlg();cancelEd()}});
+draw();
+</script>
+</body>
+</html>
