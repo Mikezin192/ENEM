@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>ENEM 2026 – CC</title>
 <style>
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#09090b;--bg2:#111116;--bg3:#18181f;--bg4:#1f1f2a;--ac:#7c5cfc;--ac2:#a78bfa;--g:#22c55e;--r:#ef4444;--y:#eab308;--o:#f97316;--cy:#06b6d4;--pk:#ec4899;--t:#f0f0f5;--t2:#a0a0b8;--t3:#5a5a72;--bd:#2a2a3a}
@@ -196,6 +197,7 @@ article.tk{grid-template-columns:auto 1fr}.tk-m{grid-column:1/-1;flex-direction:
 article.wk{margin-left:1px;padding-left:6px}.sync-row{flex-direction:column}.sb{width:100%}
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 <canvas id="confetti" aria-hidden="true"></canvas>
@@ -207,6 +209,10 @@ article.wk{margin-left:1px;padding-left:6px}.sync-row{flex-direction:column}.sb{
 <h1>ENEM 2026</h1>
 <p>2h/dia — 35min Teoria + 85min Questões</p>
 <div class="goals"><span class="gl">🎯 800+ Mat</span><span class="gl">📝 900+ Red</span><span class="gl">🧪 700+ Nat</span></div>
+<div id="hojeDestaque" style="background:var(--bg2); border:2px solid var(--ac); border-radius:12px; padding:12px; margin:12px 0; text-align:center; font-weight:700;">
+    <span style="font-size:1.1rem;">Hoje: 15/02/2026 (Domingo)</span><br>
+    <span id="tarefaHoje" style="color:var(--ac2); font-size:1rem;"></span>
+</div>
 </header>
 
 <!-- ===== TIMER ===== -->
@@ -288,6 +294,13 @@ article.wk{margin-left:1px;padding-left:6px}.sync-row{flex-direction:column}.sb{
 <button type="button" class="nb" onclick="eAll()">📂</button>
 <button type="button" class="nb" onclick="cAll()">📁</button>
 <button type="button" class="nb" onclick="eCSV()">CSV</button>
+<button type="button" class="nb" onclick="toggleMusic()">🎧 Lo-fi</button>
+<button type="button" class="nb" onclick="exportAsImage()">🖼️ Export Img</button>
+<button type="button" class="nb" onclick="showNotesList()">📋 Notas</button>
+<button type="button" class="nb" onclick="requestNotificationPermission()">🔔 Ativar Notifs</button>
+<button type="button" class="nb" onclick="showSpacedReview()">🔄 Revisão Espaçada</button>
+<button type="button" class="nb" onclick="showRedGallery()">🖼️ Redações</button>
+<button type="button" class="nb" onclick="copyDiaInteiro()">📋 Copiar Dia</button>
 <button type="button" class="nb" onclick="rAll()">🔄</button>
 </nav>
 
@@ -296,8 +309,60 @@ article.wk{margin-left:1px;padding-left:6px}.sync-row{flex-direction:column}.sb{
 </div>
 
 <!-- ===== DIALOG ===== -->
-<dialog id="dlg"><h3>📝 Anotações</h3><div class="msub" data-dl="t"></div><textarea id="nt" placeholder="Erros, dúvidas..."></textarea><div class="mbtn"><button type="button" class="bt bt-g" onclick="cDlg()">Cancelar</button><button type="button" class="bt bt-p" onclick="sN()">💾 Salvar</button></div></dialog>
+<dialog id="dlg">
+    <h3>📝 Anotações</h3>
+    <div class="msub" data-dl="t"></div>
+    <textarea id="nt" placeholder="Erros, dúvidas..."></textarea>
+    <div id="redExtra" style="display:none; margin-top:12px;">
+        <label>Nota da redação (0-1000):</label>
+        <input type="number" id="redNota" min="0" max="1000" style="width:80px;">
+        <br><br>
+        <label>Foto da redação:</label>
+        <input type="file" id="redImg" accept="image/*">
+        <div id="imgPreview" style="margin-top:8px;max-height:200px;overflow:hidden;"></div>
+    </div>
+    <div class="mbtn">
+        <button type="button" class="bt bt-g" onclick="cDlg()">Cancelar</button>
+        <button type="button" class="bt bt-p" onclick="sN()">💾 Salvar</button>
+    </div>
+</dialog>
 <div class="toasts" id="toasts" aria-live="polite"></div>
+<button id="grokBtn" style="position:fixed; bottom:20px; right:20px; width:60px; height:60px; border-radius:50%; background:#000; color:#fff; font-size:1.8rem; border:none; box-shadow:0 4px 12px rgba(0,0,0,0.5); cursor:pointer; z-index:999;">G</button>
+
+    <dialog id="grokChat" style="width:90vw; max-width:500px; height:70vh; border:none; border-radius:12px; background:var(--bg2); color:var(--t); padding:0; overflow:hidden;">
+      <div style="height:100%; display:flex; flex-direction:column;">
+        <div style="padding:12px; background:var(--bg3); border-bottom:1px solid var(--bd); display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="margin:0;">Grok – Tutor ENEM</h3>
+          <button onclick="document.getElementById('grokChat').close()" style="background:none; border:none; color:var(--t); font-size:1.4rem; cursor:pointer;">✖</button>
+        </div>
+        <div id="grokMessages" style="flex:1; overflow-y:auto; padding:16px;"></div>
+        <div style="padding:12px; border-top:1px solid var(--bd); display:flex; gap:8px;">
+          <input id="grokInput" placeholder="Pergunte sobre ENEM, redação, matemática..." style="flex:1; padding:12px; border-radius:8px; border:1px solid var(--bd); background:var(--bg); color:var(--t);">
+          <button id="grokSend" class="bt bt-p" style="padding:12px 20px;">Enviar</button>
+        </div>
+      </div>
+    </dialog>
+
+<div id="musicPlayer" style="display:none; position:fixed; bottom:80px; left:10px; right:10px; z-index:100; background:var(--bg2); padding:12px; border-radius:12px; border:1px solid var(--bd);">
+    <h4 style="margin:0 0 8px; font-size:0.9rem; color:var(--t2);">Lo-fi / Playlist</h4>
+    
+    <!-- Campo para colar link ou ID -->
+    <input type="text" id="playlistInput" placeholder="Cole link da playlist ou vídeo aqui..." 
+           style="width:100%; padding:8px; margin-bottom:8px; background:var(--bg); border:1px solid var(--bd); border-radius:6px; color:var(--t); font-family:inherit;">
+    
+    <!-- Botão para aplicar -->
+    <button onclick="loadCustomMusic()" class="bt bt-p" style="width:100%; margin-bottom:8px;">Carregar 🎵</button>
+    
+    <!-- Iframe do player -->
+    <iframe id="lofiFrame" width="100%" height="80" 
+            src="https://www.youtube-nocookie.com/embed/cIZhlFIyJ_Y?autoplay=0&controls=1&mute=0" 
+            frameborder="0" allow="autoplay; encrypted-media" allowfullscreen 
+            referrerpolicy="strict-origin-when-cross-origin">
+    </iframe>
+    
+    <!-- Botão fechar -->
+    <button onclick="toggleMusic()" style="position:absolute;top:8px;right:10px;background:transparent;border:none;color:var(--t);font-size:1.2rem;">✖</button>
+</div>
 
 <script>
 // ===== DADOS =====
@@ -528,7 +593,18 @@ const D=[
 
 const T=D.map(d=>({id:d[0],sem:d[1],fase:d[2],dia:d[3],data:d[4],mat:d[5],tit:d[6],det:d[7]||'',tipo:d[8],pri:d[9],multi:!!d[10],rest:!!d[11]}));
 const F={1:{e:'🟢',n:'FASE 1: Base Lógica',s:'Fev–Mar',c:'var(--g)'},2:{e:'🟡',n:'FASE 2: Geometria e Mecânica',s:'Abr–Jun',c:'var(--y)'},3:{e:'🔵',n:'FASE 3: Diferencial',s:'Jul–Ago',c:'var(--ac)'},4:{e:'🔴',n:'FASE 4: Deploy',s:'Set–Out',c:'var(--r)'}};
-
+const matIcons = {
+    Mat: '📐',
+    Fís: '⚛️',
+    Quí: '🧪',
+    Bio: '🧬',
+    Hum: '🌍',
+    Ling: '📖',
+    Red: '✍️',
+    Rev: '🔍',
+    Sim: '📊',
+    OFF: '😴'
+};
 // ===== STATE =====
 let dn=J('cc_d',{}),nt=J('cc_n',{}),sk=J('cc_s',{c:0,d:[]}),oP=J('cc_p',{1:1,2:1,3:1,4:1}),oW=J('cc_w',{}),xp={},mI=null;
 function J(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch{return d}}
@@ -557,7 +633,8 @@ else{if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()
 
 function tick(){tSc--;tSt++;localStorage.setItem('cc_ts_'+new Date().toISOString().split('T')[0],tSt);
 if(tSc<=0){if(tPh==='theory'){tPh='practice';tSc=tPr;tMx=tPr;alarm();toast('📝 Teoria ok! QUESTÕES!');try{navigator.vibrate([200,100,200])}catch{}}
-else{tPh='done';tRn=false;clearInterval(tIn);alarm();setTimeout(alarm,1000);toast('🏆 Sessão completa!');confetti();try{navigator.vibrate([300,200,300,200,300])}catch{};const td=new Date().toISOString().split('T')[0];if(!sk.d.includes(td)){sk.d.push(td);S()}upD()}}rT()}
+else{tPh='done';tRn=false;clearInterval(tIn);alarm();setTimeout(alarm,1000);toast('🏆 Sessão completa!');confetti();try{navigator.vibrate([300,200,300,200,300])}catch{};const td=new Date().toISOString().split('T')[0];if(!sk.d.includes(td)){sk.d.push(td);S()}upD()}}
+showNotification("Sessão completa!", "Parabéns! Você terminou o bloco de hoje. 🏆");rT()}
 
 function tSkip(){if(tPh==='theory'){tPh='practice';tSc=tPr;tMx=tPr;beep();toast('⏭ Questões!')}else if(tPh==='practice'){tPh='done';tRn=false;clearInterval(tIn);beep();toast('⏭ Fim')}rT()}
 function tRst(){clearInterval(tIn);tRn=false;tPh='theory';tSc=tTh;tMx=tTh;$('[data-t="go"]').textContent='▶ Iniciar';$('[data-t="go"]').classList.remove('run');rT()}
@@ -587,7 +664,14 @@ h+=`<section class="ph ${op?'':'cl'}" data-p="${fn}"><div class="ph-h" role="but
 Object.keys(g[fn]).sort((a,b)=>a-b).forEach(w=>{const wt=g[fn][w],wd=wt.filter(t=>dn[t.id]).length,wk=fn+'-'+w,wo=oW[wk]!==false,wc=wd===wt.length,d1=fmt(wt[0].data),d2=fmt(wt[wt.length-1].data);
 h+=`<article class="wk ${wo?'':'cl'}"><div class="wk-h" role="button" tabindex="0" onclick="tW('${wk}')" aria-expanded="${wo}"><div class="wk-d ${wc?'cpl':''}" style="background:${f.c}"></div><span class="wk-t">Semana ${w}</span><span class="wk-bg">${d1}→${d2}</span><span class="wk-bg ${wc?'wd':''}">${wd}/${wt.length}✓</span><span class="wk-ar">▼</span></div><div class="wk-b" style="max-height:${wo?'999999px':'0'};opacity:${wo?1:0}">`;
 wt.forEach(t=>{const d2=dn[t.id],ex=xp[t.id],hn=nt[t.id],isSm=t.mat.includes('Sim')||t.tipo==='Simulado';
-h+=`<article class="tk p-${t.pri} ${d2?'done':''} ${ex?'exp':''} ${t.multi?'multi':''} ${isSm?'sim':''} ${t.rest?'rest':''}" data-id="${t.id}" onclick="tE('${t.id}')"><button type="button" class="ck ${d2?'on':''}" onclick="event.stopPropagation();ck('${t.id}')" aria-label="Check"></button><div class="tk-c"><h4>${t.tit}</h4>${t.det?`<p>${t.det}</p>`:''}<div class="tk-tags">${t.mat.map(m=>`<span class="tg tg-${m}">${m}</span>`).join('')}<span class="tg" style="background:rgba(124,92,252,.05);color:var(--ac2)">${t.tipo}</span></div></div><div class="tk-m"><span class="dy">${t.dia}</span><time datetime="${t.data}">${fmt(t.data)}</time><button type="button" class="nbtn ${hn?'has':''}" onclick="event.stopPropagation();oM('${t.id}')">📝</button></div></article>`});
+h+=`<article class="tk p-${t.pri} ${d2?'done':''} ${ex?'exp':''} ${t.multi?'multi':''} ${isSm?'sim':''} ${t.rest?'rest':''}" data-id="${t.id}" onclick="tE('${t.id}')"><button type="button" class="ck ${d2?'on':''}" onclick="event.stopPropagation();ck('${t.id}')" aria-label="Check"></button><div class="tk-c"><h4>${t.tit}</h4>${t.det?`<p>${t.det}</p>`:''}<div class="tk-tags">
+    ${t.mat.map(m => `<span class="tg tg-${m}">${matIcons[m] || '📌'} ${m}</span>`).join('')}
+    <span class="tg" style="background:rgba(124,92,252,.05);color:var(--ac2)">${t.tipo}</span>
+</div></div><div class="tk-m">
+    <span class="dy">${t.dia}</span>
+    <time datetime="${t.data}">${fmt(t.data)}</time>
+ <button type="button" class="nbtn${hn ? ' has' : ''}" onclick="event.stopPropagation(); oM('${t.id}')">📝</button>
+</div></article>`});
 h+=`</div></article>`});h+=`</div></section>`});
 c.innerHTML=h||'<div class="empty">🔍 Nada encontrado</div>';upD()}
 
@@ -608,15 +692,453 @@ $('[data-pr="pct"]').textContent=pct+'%';$('[data-pr="bar"]').style.width=pct+'%
 const dates=sk.d.sort();let sc=0;const now=new Date();for(let i=0;i<60;i++){const d=new Date(now);d.setDate(now.getDate()-i);if(dates.includes(d.toISOString().split('T')[0]))sc++;else if(i>0)break}
 sk.c=sc;$('[data-s="n"]').textContent=sc;let dots='';for(let i=20;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);const ds=d.toISOString().split('T')[0];dots+=`<div class="s-c ${dates.includes(ds)?'on':''} ${i===0?'now':''}"></div>`}$('[data-s="g"]').innerHTML=dots;rT()}
 
-function oM(id){mI=id;$('[data-dl="t"]').textContent=T.find(t=>t.id===id).tit;document.getElementById('nt').value=nt[id]||'';document.getElementById('dlg').showModal()}
+function oM(id){
+    mI = id;
+    const task = T.find(t => t.id === id);          
+    $('[data-dl="t"]').textContent = task.tit;
+    document.getElementById('nt').value = nt[id] ? (typeof nt[id] === 'object' ? nt[id].text || '' : nt[id]) : '';
+
+    
+    if (task && (task.mat.includes('Red') || task.tipo.includes('Red'))) {
+        $('#redExtra').style.display = 'block';
+
+                if (nt[id] && typeof nt[id] === 'object') {
+            $('#redNota').value = nt[id].nota || '';
+           if (nt[id] && nt[id].img) {
+    $('#imgPreview').innerHTML = `<img src="${nt[id].img}" style="max-width:100%; border-radius:8px;">`;
+    $('#redNota').value = nt[id].nota || '';
+}
+        } else {
+            $('#redNota').value = '';
+            $('#imgPreview').innerHTML = '';
+        }
+    } else {
+        $('#redExtra').style.display = 'none';
+        $('#redNota').value = '';
+        $('#imgPreview').innerHTML = '';
+    }
+
+    document.getElementById('dlg').showModal();
+}
 function cDlg(){document.getElementById('dlg').close();mI=null}
-function sN(){const v=document.getElementById('nt').value;if(v.trim())nt[mI]=v;else delete nt[mI];S();cDlg();toast('💾 Salvo!');draw()}
+function sN(){
+    const textareaValue = document.getElementById('nt').value.trim();
+
+    if ($('#redExtra').style.display !== 'none') {
+        // É redação → salva como objeto
+        const nota = $('#redNota').value.trim();
+        const fileInput = $('#redImg');
+
+        if (fileInput.files && fileInput.files[0]) {
+            // Tem nova foto → lê e salva tudo
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                nt[mI] = {
+                    text: textareaValue,
+                    nota: nota || '',
+                    img: ev.target.result
+                };
+                S();
+                cDlg();
+                toast('Redação salva com foto e nota!');
+                draw();
+            };
+            reader.readAsDataURL(fileInput.files[0]);
+            return; // Espera o onload terminar (async)
+        } else {
+            // Sem nova foto → mantém a anterior se existir
+            let existingImg = '';
+            if (nt[mI] && typeof nt[mI] === 'object' && nt[mI].img) {
+                existingImg = nt[mI].img;
+            }
+            nt[mI] = {
+                text: textareaValue,
+                nota: nota || '',
+                img: existingImg
+            };
+        }
+    } else {
+        // Não é redação → salva como string simples
+        if (textareaValue) {
+            nt[mI] = textareaValue;
+        } else {
+            delete nt[mI];
+        }
+    }
+
+    S();
+    cDlg();
+    toast('💾 Salvo!');
+    draw();
+}
 function eCSV(){let c='\uFEFF"Sem","Fase","Dia","Data","Mat","Título","Det","Tipo","Pri","Feito"\n';T.forEach(t=>{c+=`${t.sem},"${F[t.fase].n}","${t.dia}","${t.data}","${t.mat.join(',')}","${t.tit}","${t.det.replace(/"/g,'""')}","${t.tipo}","${t.pri}","${dn[t.id]?'TRUE':'FALSE'}"\n`});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/csv;charset=utf-8;'}));a.download='enem2026_cc.csv';a.click();toast('📥 CSV!')}
 function rAll(){if(!confirm('⚠️ Apagar TUDO?'))return;dn={};nt={};sk={c:0,d:[]};localStorage.clear();S();draw();toast('🔄 Reset!')}
 function fmt(d){const[y,m,dd]=d.split('-');return dd+'/'+m}
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.getElementById('toasts').appendChild(t);setTimeout(()=>t.remove(),3000)}
 function confetti(){const cv=document.getElementById('confetti'),ctx=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;const ps=[],cl=['#22c55e','#eab308','#7c5cfc','#ef4444','#f97316','#06b6d4','#ec4899'];for(let i=0;i<80;i++)ps.push({x:Math.random()*cv.width,y:-10-Math.random()*200,vx:(Math.random()-.5)*7,vy:Math.random()*3+2,c:cl[~~(Math.random()*cl.length)],s:Math.random()*4+2,r:Math.random()*360,rs:(Math.random()-.5)*10,l:1});(function go(){ctx.clearRect(0,0,cv.width,cv.height);let a=false;ps.forEach(p=>{if(p.l<=0)return;a=true;p.x+=p.vx;p.vy+=.1;p.y+=p.vy;p.r+=p.rs;p.l-=.007;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r*Math.PI/180);ctx.globalAlpha=p.l;ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);ctx.restore()});if(a)requestAnimationFrame(go);else ctx.clearRect(0,0,cv.width,cv.height)})()}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){cDlg();cancelEd()}});
+
+function showNotesList() {
+    const notesIds = Object.keys(nt);
+    if (notesIds.length === 0) {
+        toast("Nenhuma anotação salva ainda.");
+        return;
+    }
+
+    let html = `
+        <h3 style="margin-bottom:12px">Anotações salvas (${notesIds.length})</h3>
+        <div style="max-height:60vh;overflow-y:auto;font-size:0.9rem;line-height:1.5">
+    `;
+
+    notesIds.sort().forEach(id => {
+        const task = T.find(t => t.id === id);
+        if (!task) return;
+
+        const dataFmt = fmt(task.data);
+        const dataTitle = task.tit.length > 45 ? task.tit.substring(0,42) + "..." : task.tit;
+
+        // Correção principal: pega o texto corretamente (seja string ou objeto)
+        let notaText = '';
+        if (typeof nt[id] === 'object' && nt[id] !== null) {
+            notaText = nt[id].text || '';  // pega o campo 'text' do objeto
+        } else {
+            notaText = nt[id] || '';       // se for string antiga
+        }
+
+        const notaPreview = notaText.substring(0,120) + (notaText.length > 120 ? "..." : "");
+
+        html += `
+            <div style="padding:10px 12px;margin:6px 0;background:var(--bg3);border-radius:8px;border-left:4px solid var(--ac);">
+                <strong>${dataFmt} • ${task.dia}</strong><br>
+                <span style="color:var(--ac2)">${dataTitle}</span><br>
+                <div style="margin-top:6px;color:var(--t2);font-size:0.82rem">
+                    ${notaPreview}
+                </div>
+                <button type="button" class="nbtn" style="margin-top:8px;font-size:0.7rem;" 
+                    onclick="oM('${id}'); document.getElementById('dlg').showModal();">
+                    ✏️ Ver/Editar
+                </button>
+            </div>
+        `;
+    });
+
+    html += `</div>`;
+
+    const tempDialog = document.createElement('dialog');
+    tempDialog.innerHTML = `
+        <div style="position:relative;">
+            <button type="button" style="position:absolute;top:0;right:0;padding:8px 12px;background:transparent;border:none;font-size:1.2rem;cursor:pointer;color:var(--t);" 
+                onclick="this.closest('dialog').close();this.closest('dialog').remove();">✖</button>
+            ${html}
+        </div>
+    `;
+    document.body.appendChild(tempDialog);
+    tempDialog.showModal();
+
+    tempDialog.addEventListener('click', e => {
+        if (e.target === tempDialog) {
+            tempDialog.close();
+            tempDialog.remove();
+        }
+    });
+}
+function exportAsImage() {
+    const element = document.querySelector('.app'); // ou '#ct' se quiser só o cronograma
+    html2canvas(element, {scale: 2, useCORS: true, backgroundColor: null}).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'cronograma_enem2026.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        toast('🖼️ Imagem baixada!');
+    }).catch(err => {
+        toast('❌ Erro ao gerar imagem');
+        console.error(err);
+    });
+}
+function requestNotificationPermission() {
+    if (!("Notification" in window)) {
+        toast("Notificações não suportadas no seu navegador.");
+        return;
+    }
+    Notification.requestPermission().then(permission => {
+        if (permission === "granted") {
+            toast("Notificações ativadas! 🎉");
+        } else {
+            toast("Permissão negada para notificações.");
+        }
+    });
+}
+
+function showNotification(title, body) {
+    if (Notification.permission === "granted") {
+        new Notification(title, {body: body, icon: '/favicon.ico'}); // opcional: mude o icon se tiver um favicon
+    }
+}
+
+window.addEventListener('load', function() {
+    const redImgInput = document.getElementById('redImg');
+    if (redImgInput) {
+        redImgInput.onchange = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                const previewDiv = document.getElementById('imgPreview');
+                if (previewDiv) {
+                    previewDiv.innerHTML = `<img src="${ev.target.result}" style="max-width:100%;">`;
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+    }
+});
+function toggleMusic() {
+    const player = $('#musicPlayer');
+    const frame = $('#lofiFrame');
+    if (player.style.display === 'none') {
+        player.style.display = 'block';
+        frame.src = frame.src.replace('autoplay=0', 'autoplay=1'); // inicia ao abrir
+        toast('Lo-fi ativado! 🎶');
+    } else {
+        player.style.display = 'none';
+        frame.src = frame.src.replace('autoplay=1', 'autoplay=0'); // pausa ao fechar
+        toast('Música pausada');
+    }
+}
+function loadCustomMusic() {
+    const input = document.getElementById('playlistInput');
+    const frame = document.getElementById('lofiFrame');
+    let url = input.value.trim();
+
+    if (!url) {
+        toast('Cole um link ou ID válido!');
+        return;
+    }
+
+    // Extrai ID de vídeo ou playlist
+    let videoId = '';
+    let playlistId = '';
+
+    // Caso seja link completo
+    if (url.includes('youtube.com/watch?v=')) {
+        const match = url.match(/v=([^&]+)/);
+        if (match) videoId = match[1];
+    } else if (url.includes('youtu.be/')) {
+        videoId = url.split('/').pop().split('?')[0];
+    } else if (url.includes('list=')) {
+        const match = url.match(/list=([^&]+)/);
+        if (match) playlistId = match[1];
+    } else {
+        // Assume que colou só o ID
+        if (url.startsWith('PL')) {
+            playlistId = url;
+        } else {
+            videoId = url;
+        }
+    }
+
+    let newSrc = '';
+    if (playlistId) {
+        // Formato para playlist: videoseries?list=PL...
+        newSrc = `https://www.youtube-nocookie.com/embed/videoseries?list=${playlistId}&autoplay=1&controls=1&mute=0`;
+        toast('Playlist carregada! 🎶');
+    } else if (videoId) {
+        newSrc = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=1&mute=0`;
+        toast('Vídeo carregado! ▶');
+    } else {
+        toast('Link/ID inválido. Tente novamente.');
+        return;
+    }
+
+    // Atualiza o iframe
+    frame.src = newSrc;
+}
+function showSpacedReview() {
+    const today = new Date();
+    const toReview = T.filter(t => {
+        if (!dn[t.id]) return false;
+        const doneDate = new Date(dn[t.id]);
+        const daysAgo = Math.floor((today - doneDate) / (86400000)); // 1000*60*60*24 = 86400000
+        return [7, 14, 30, 90].includes(daysAgo);
+    });
+
+    if (toReview.length === 0) {
+        toast("Nenhuma revisão espaçada pendente agora.");
+        return;
+    }
+
+    let html = '<h3>Revisão Espaçada Sugerida</h3><p>Priorize essas para fixar o conteúdo:</p><ul style="margin:12px 0; padding-left:20px;">';
+    toReview.forEach(t => {
+        const days = Math.floor((today - new Date(dn[t.id])) / 86400000);
+        html += `<li><strong>${t.tit}</strong> (${fmt(t.data)}) — feito há <b>${days} dias</b></li>`;
+    });
+    html += '</ul>';
+
+    const dlg = document.createElement('dialog');
+    dlg.innerHTML = `
+        <div style="position:relative; padding:20px;">
+            ${html}
+            <button type="button" style="position:absolute;top:10px;right:10px; background:transparent; border:none; font-size:1.4rem; cursor:pointer;" 
+                onclick="this.closest('dialog').close(); this.closest('dialog').remove();">✖</button>
+            <button type="button" class="bt bt-p" onclick="this.closest('dialog').close(); this.closest('dialog').remove();">Fechar</button>
+        </div>
+    `;
+    document.body.appendChild(dlg);
+    dlg.showModal();
+}
+function showRedGallery() {
+    const reds = Object.entries(nt).filter(([id, val]) => val.img && T.find(t=>t.id===id)?.mat.includes('Red'));
+    if (reds.length === 0) return toast("Nenhuma redação com foto salva.");
+    let html = '<h3>Galeria de Redações</h3><div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px;">';
+    reds.forEach(([id, val]) => {
+        const task = T.find(t=>t.id===id);
+        html += `
+            <div style="text-align:center;">
+                <img src="${val.img}" style="width:100%; border-radius:8px; cursor:pointer;" onclick="alert('Nota: ${val.nota || '?'} | ${task?.tit || id}')">
+                <small>${fmt(task?.data || 'Data perdida')} - ${val.nota || '?'}pts</small>
+            </div>`;
+    });
+    html += '</div>';
+    // Use temp dialog como antes
+    const dlg = document.createElement('dialog');
+    dlg.innerHTML = `<div style="padding:20px;">${html}<button onclick="this.closest('dialog').close();this.closest('dialog').remove();">Fechar</button></div>`;
+    document.body.appendChild(dlg);
+    dlg.showModal();
+}
+function highlightHoje() {
+    const hoje = new Date().toISOString().split('T')[0]; // '2026-02-15'
+    const tarefa = T.find(t => t.data === hoje);
+    
+    const el = document.getElementById('tarefaHoje');
+    if (tarefa) {
+        el.textContent = `${tarefa.dia}: ${tarefa.tit} (${tarefa.mat.join(' + ')})`;
+        el.style.color = tarefa.pri === 'alta' ? 'var(--r)' : 'var(--g)';
+    } else {
+        el.textContent = 'Dia livre ou sem tarefa marcada hoje!';
+        el.style.color = 'var(--t3)';
+    }
+    
+    // Opcional: destacar a tarefa no cronograma
+    document.querySelectorAll('.tk').forEach(tk => tk.style.opacity = '0.6');
+    const hojeEl = document.querySelector(`.tk time[datetime="${hoje}"]`);
+    if (hojeEl) {
+        hojeEl.closest('.tk').style.opacity = '1';
+        hojeEl.closest('.tk').style.border = '2px solid var(--ac)';
+        hojeEl.closest('.tk').scrollIntoView({behavior: 'smooth', block: 'center'});
+    }
+}
+
+highlightHoje(); // chama no início
+// E chame também no final de draw(): highlightHoje();
+function copyDiaInteiro() {
+    const hoje = new Date().toISOString().split('T')[0]; // ex: '2026-02-15'
+    
+    const tarefasHoje = T.filter(t => t.data === hoje);
+    
+    if (tarefasHoje.length === 0) {
+        toast("Nenhuma tarefa marcada para hoje.");
+        return;
+    }
+    
+    // Monta texto bonito para colar (WhatsApp, bloco de notas, etc.)
+    let texto = `Tarefas de hoje (${fmt(hoje)} - ${new Date().toLocaleDateString('pt-BR', {weekday: 'long'})}):\n\n`;
+    
+    tarefasHoje.forEach(t => {
+        const mats = t.mat.map(m => m).join(' + ');
+        texto += `• ${t.tit} (${mats})\n`;
+        if (t.det) texto += `  Detalhes: ${t.det}\n`;
+        texto += `\n`;
+    });
+    
+    // Copia para clipboard
+    navigator.clipboard.writeText(texto.trim())
+        .then(() => {
+            toast("Dia copiado! Cole onde quiser 📋");
+        })
+        .catch(err => {
+            console.error('Erro ao copiar:', err);
+            toast("Erro ao copiar. Tente manualmente.");
+        });
+}
+
+function fmt(dateStr) {
+    const [y, m, d] = dateStr.split('-');
+    return `${d}/${m}/${y}`;
+}const GROK_API_KEY = "xai-9fIcf4IY1582y4quwIg9kt9RdLwPw1vO2NdZTQ1QT8N5wCvEHs6UeqjqREMrURxX8Dtqioin98buEHyG"; // ← sua key real
+
+        document.getElementById('grokBtn').onclick = () => {
+            const dlg = document.getElementById('grokChat');
+            dlg.showModal();
+
+            const messages = document.getElementById('grokMessages');
+            const input = document.getElementById('grokInput');
+            const send = document.getElementById('grokSend');
+
+            // Limpa mensagens antigas (opcional - comente se quiser manter histórico na sessão)
+            // messages.innerHTML = '';
+
+            send.onclick = async () => {
+                const text = input.value.trim();
+                if (!text) return;
+
+                // Mostra mensagem do usuário (alinhada à direita)
+                addMsg('Você', text, 'right');
+                input.value = '';
+
+                // Mostra placeholder "Pensando..."
+                addMsg('Grok', 'Pensando...', 'left');
+
+                try {
+                    const res = await fetch("https://api.x.ai/v1/chat/completions", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${GROK_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: "grok-beta",  // modelo mais acessível no tier inicial/free
+                            messages: [
+                                {
+                                    role: "system",
+                                    content: "Você é um tutor especialista no ENEM 2026, focado em Ciência da Computação federal. Responda de forma clara, motivadora, com exemplos e dicas práticas. Use linguagem jovem e direta em português."
+                                },
+                                {
+                                    role: "user",
+                                    content: text
+                                }
+                            ],
+                            temperature: 0.7,
+                            max_tokens: 800,
+                            stream: false
+                        })
+                    });
+
+                    if (!res.ok) {
+                        throw new Error(`Erro na API: ${res.status} - ${res.statusText}`);
+                    }
+
+                    const data = await res.json();
+                    const reply = data.choices[0].message.content;
+
+                    // Substitui "Pensando..." pela resposta real
+                    messages.lastChild.innerHTML = `<strong>Grok:</strong> ${reply.replace(/\n/g, '<br>')}`;
+                } catch (err) {
+                    messages.lastChild.innerHTML = `<strong>Grok:</strong> <span style="color:var(--r);">Erro:</span> ${err.message}<br><small>Verifique sua key, rede ou limites da API xAI.</small>`;
+                }
+
+                messages.scrollTop = messages.scrollHeight;
+            };
+
+            // Função auxiliar para adicionar mensagens no chat
+            function addMsg(sender, msg, align) {
+                const div = document.createElement('div');
+                div.style.margin = '12px 0';
+                div.style.textAlign = align === 'right' ? 'right' : 'left';
+                div.innerHTML = `<strong>${sender}:</strong> ${msg}`;
+                messages.appendChild(div);
+                messages.scrollTop = messages.scrollHeight;
+            }
+        };
 draw();
 </script>
 </body>
