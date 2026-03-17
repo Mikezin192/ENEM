@@ -196,6 +196,99 @@ article.tk{grid-template-columns:auto 1fr}.tk-m{grid-column:1/-1;flex-direction:
 .s-g{display:none}nav.bar{flex-direction:column}.search{min-width:100%}
 article.wk{margin-left:1px;padding-left:6px}.sync-row{flex-direction:column}.sb{width:100%}
 }
+@keyframes alertaPiscar { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+.atraso-alto { animation: alertaPiscar 2s infinite; }
+.fase-dot {
+    width: 60px; height: 60px; border-radius: 50%; 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 1.4rem; font-weight: bold; cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+.fase-dot:hover { transform: scale(1.15); box-shadow: 0 6px 15px rgba(0,0,0,0.5); }
+.fase-dot.atual { border: 3px solid var(--ac2); box-shadow: 0 0 15px var(--ac); }
+.fase-dot.concluida { opacity: 0.7; filter: brightness(1.2); }
+.cal-dia {
+    padding:8px; border-radius:6px; min-height:60px; display:flex; flex-direction:column; justify-content:center;
+    border:1px solid var(--bd); cursor:pointer; transition:0.2s;
+}
+#calendarioSection {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+.cal-dia {
+    padding: 10px;
+    border-radius: 8px;
+    min-height: 70px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border: 1px solid var(--bd);
+    cursor: pointer;
+    transition: 0.2s;
+    background: var(--bg3);
+}
+.cal-dia:hover {
+    background: var(--bg4);
+    transform: scale(1.05);
+}
+.cal-hoje {
+    border: 3px solid var(--ac);
+    background: rgba(124,92,252,0.15);
+    font-weight: bold;
+}
+.cal-feito {
+    background: rgba(34,197,94,0.25);
+    border-color: var(--g);
+}
+.cal-pendente {
+    background: rgba(234,179,8,0.25);
+    border-color: var(--y);
+}
+.cal-atrasado {
+    background: rgba(239,68,68,0.25);
+    border-color: var(--r);
+    an
+imation: alertaPiscar 3s infinite;
+}
+.cal-pulado {
+    background: rgba(249,115,22,0.25) !important;  /* laranja suave */
+    border-color: var(--o);
+    opacity: 0.9;
+}
+.cal-pulado:hover {
+    background: rgba(249,115,22,0.4) !important;
+}
+.sub-tarefas {
+    background: rgba(0,0,0,0.1);
+    border-radius: 8px;
+    padding: 8px;
+    margin: 8px 0;
+}
+.sub-tk {
+    border: 1px dashed var(--ac);
+    background: var(--bg3);
+    padding: 6px 10px;
+    margin: 4px 0;
+}
+.sub-tk .ck {
+    margin-right: 12px;
+}
+.sub-tarefas {
+    background: rgba(0,0,0,0.1);
+    border-radius: 8px;
+    padding: 8px;
+    margin: 8px 0;
+}
+.sub-tk {
+    border: 1px dashed var(--ac);
+    background: var(--bg3);
+    padding: 6px 10px;
+    margin: 4px 0;
+}
+.sub-tk .ck {
+    margin-right: 12px;
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -212,9 +305,19 @@ article.wk{margin-left:1px;padding-left:6px}.sync-row{flex-direction:column}.sb{
 <div id="hojeDestaque" style="background:var(--bg2); border:2px solid var(--ac); border-radius:12px; padding:12px; margin:12px 0; text-align:center; font-weight:700;">
     <span style="font-size:1.1rem;" id="dataHojeTexto">Carregando data...</span><br>
     <span id="tarefaHoje" style="color:var(--ac2); font-size:1rem;"></span>
+<button type="button" onclick="pularDia()" style="margin-top:10px; padding:8px 16px; background:var(--y); color:#000; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:0.9rem;">
+    ⏭ Pular este dia
+</button>
 </div>
 </header>
 
+<div id="atrasoAlerta" style="display:none; background:rgba(239,68,68,0.15); border:2px solid var(--r); border-radius:12px; padding:12px; margin:12px 0; text-align:center; color:var(--r); font-weight:700;">
+    <span>⚠️ Você está atrasado <strong id="diasAtraso">0</strong> dias!</span><br>
+    <small style="color:var(--t3);">Priorize tarefas pendentes de alta prioridade.</small>
+</div>
+<div id="mapaFases" style="display:flex; justify-content:center; gap:12px; margin:16px 0; flex-wrap:wrap; padding:0 10px;">
+    <!-- Será preenchido automaticamente pelo JS -->
+</div>
 <!-- ===== TIMER ===== -->
 <section class="timer" aria-label="Temporizador">
 <div class="t-lbl" data-t="lbl">📖 TEORIA</div>
@@ -277,10 +380,10 @@ article.wk{margin-left:1px;padding-left:6px}.sync-row{flex-direction:column}.sb{
 <section class="sync" aria-label="Sincronizar">
 <h3>🔄 Sincronizar</h3>
 <div class="sync-row">
-<button type="button" class="sb" onclick="expP()">📤 Exportar</button>
-<button type="button" class="sb" onclick="showI()">📥 Importar</button>
-<button type="button" class="sb" onclick="cpC()">📋 Copiar</button>
-<button type="button" class="sb" onclick="shP()">📱 Share</button>
+<button type="button" class="sb" onclick="expP()" style="background:#22c55e; color:#fff; border-color:#16a34a;">📤 Exportar</button>
+        <button type="button" class="sb" onclick="showI()" style="background:#3b82f6; color:#fff; border-color:#2563eb;">📥 Importar</button>
+        <button type="button" class="sb" onclick="cpC()" style="background:#eab308; color:#000; border-color:#ca8a04;">📋 Copiar</button>
+        <button type="button" class="sb" onclick="shP()" style="background:#ec4899; color:#fff; border-color:#db2777;">📱 Share</button>
 </div>
 <textarea class="sc" id="sc" placeholder="Cole o código..."></textarea>
 <div class="imp" data-sy="ib">
@@ -295,30 +398,63 @@ article.wk{margin-left:1px;padding-left:6px}.sync-row{flex-direction:column}.sb{
 <label for="si" class="sr-only">Buscar</label>
 <input class="search" id="si" placeholder="🔍 Buscar..." oninput="draw()">
 <select class="sel" id="ff" onchange="draw()" aria-label="Fase"><option value="">Fases</option><option value="1">🟢F1</option><option value="2">🟡F2</option><option value="3">🔵F3</option><option value="4">🔴F4</option></select>
-<select class="sel" id="fm" onchange="draw()" aria-label="Matéria"><option value="">Mat.</option><option value="Mat">Mat</option><option value="Fís">Fís</option><option value="Quí">Quí</option><option value="Bio">Bio</option><option value="Hum">Hum</option><option value="Ling">Ling</option><option value="Red">Red</option></select>
-<select class="sel" id="fs" onchange="draw()" aria-label="Status"><option value="">Status</option><option value="p">Pendentes</option><option value="d">Feitas</option></select>
-<button type="button" class="nb" onclick="eAll()">📂</button>
-<button type="button" class="nb" onclick="cAll()">📁</button>
-<button type="button" class="nb" onclick="eCSV()">CSV</button>
-<button type="button" class="nb" onclick="toggleMusic()">🎧 Lo-fi</button>
-<button type="button" class="nb" onclick="exportAsImage()">🖼️ Export Img</button>
-<button type="button" class="nb" onclick="showNotesList()">📋 Notas</button>
-<button type="button" class="nb" onclick="requestNotificationPermission()">🔔 Ativar Notifs</button>
-<button type="button" class="nb" onclick="showSpacedReview()">🔄 Revisão Espaçada</button>
-<button type="button" class="nb" onclick="showRedGallery()">🖼️ Redações</button>
-<button type="button" class="nb" onclick="copyDiaInteiro()">📋 Copiar Dia</button>
-<button type="button" class="nb" onclick="rAll()">🔄</button>
+<select class="sel" id="fm" onchange="draw()" aria-label="Matéria">
+        <option value="">Mat.</option>
+        <option value="Mat">Mat</option>
+        <option value="Fís">Fís</option>
+        <option value="Quí">Quí</option>
+        <option value="Bio">Bio</option>
+        <option value="Hum">Hum</option>
+        <option value="Ling">Ling</option>
+        <option value="Red">Red</option>
+    </select><select class="sel" id="fs" onchange="draw()" aria-label="Status"><option value="">Status</option><option value="p">Pendentes</option><option value="d">Feitas</option></select>
+<button type="button" class="nb" onclick="eAll()" style="background:#4ade80; color:#000; border-color:#22c55e;">📂 Expandir tudo</button>
+    <button type="button" class="nb" onclick="cAll()" style="background:#f87171; color:#fff; border-color:#ef4444;">📁 Colapsar tudo</button>
+    <button type="button" class="nb" onclick="eCSV()" style="background:#fbbf24; color:#000; border-color:#eab308;">📊 Exportar CSV</button>
+    <button type="button" class="nb" onclick="toggleMusic()" style="background:#a78bfa; color:#000; border-color:#7c5cfc;">🎧 Lo-fi</button>
+    <button type="button" class="nb" onclick="exportAsImage()" style="background:#60a5fa; color:#000; border-color:#3b82f6;">🖼️ Exportar Imagem</button>
+    <button type="button" class="nb" onclick="showNotesList()" style="background:#f472b6; color:#000; border-color:#ec4899;">📋 Notas</button>
+    <button type="button" class="nb" onclick="requestNotificationPermission()" style="background:#34d399; color:#000; border-color:#10b981;">🔔 Notificações</button>
+    <button type="button" class="nb" onclick="showSpacedReview()" style="background:#f97316; color:#fff; border-color:#ea580c;">🔄 Revisão Espaçada</button>
+    <button type="button" class="nb" onclick="showRedGallery()" style="background:#c084fc; color:#000; border-color:#a855f7;">🖼️ Redações</button>
+    <button type="button" class="nb" onclick="copyDiaInteiro()" style="background:#38bdf8; color:#000; border-color:#0ea5e9;">📋 Copiar Dia</button>
+    <button type="button" class="nb" id="btnCalendario" style="background:#facc15; color:#000; border-color:#eab308;">🗓 Calendário</button>
+    <button type="button" class="nb" onclick="rAll()" style="background:#ef4444; color:#fff; border-color:#dc2626;">🔄 Reset Total</button>
 </nav>
+
 
 <!-- ===== MAIN ===== -->
 <main id="ct" aria-label="Cronograma"></main>
-</div>
 
-<!-- ===== DIALOG ===== -->
+<dialog id="calendarioDialog" style="width:90%; max-width:650px; padding:20px; border-radius:12px; background:var(--bg2); border:2px solid var(--ac);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <button onclick="mudarMes(-1)" class="bt bt-g" style="padding:8px 16px;">◀ Anterior</button>
+        <h3 id="tituloMes" style="margin:0; color:var(--ac2);">Calendário Fevereiro 2026</h3>
+        <button onclick="mudarMes(1)" class="bt bt-g" style="padding:8px 16px;">Próximo ▶</button>
+    </div>
+    <div id="calendarioGrid" style="display:grid; grid-template-columns:repeat(7,1fr); gap:8px; text-align:center; font-size:0.9rem;">
+        <div style="font-weight:bold; color:var(--r);">Dom</div>
+        <div style="font-weight:bold; color:var(--ac);">Seg</div>
+        <div style="font-weight:bold; color:var(--ac);">Ter</div>
+        <div style="font-weight:bold; color:var(--ac);">Qua</div>
+        <div style="font-weight:bold; color:var(--ac);">Qui</div>
+        <div style="font-weight:bold; color:var(--ac);">Sex</div>
+        <div style="font-weight:bold; color:var(--r);">Sáb</div>
+    </div>
+    <button onclick="document.getElementById('calendarioDialog').close()" style="margin:20px auto; display:block; padding:10px 24px;" class="bt bt-p">Fechar</button>
+</dialog>
+
+ <!-- ===== DIALOG ===== -->
 <dialog id="dlg">
-    <h3>📝 Anotações</h3>
+    <h3>📝 Anotações + Fonte do Conteúdo</h3>
     <div class="msub" data-dl="t"></div>
     <textarea id="nt" placeholder="Erros, dúvidas..."></textarea>
+
+    <!-- Novo campo para link do vídeo/site -->
+ <label style="display:block; margin:12px 0 4px; font-size:0.9rem; color:var(--t2);">Fontes usadas (um link por linha):</label>
+<textarea id="fonteLinks" placeholder="Cole links aqui, um por linha&#10;Exemplo:&#10;https://youtube.com/watch?v=abc123&#10;https://khanacademy.org/math/...&#10;https://pdf.com/resumo.pdf" 
+          style="width:100%; height:80px; padding:8px; background:var(--bg); border:1px solid var(--bd); border-radius:6px; color:var(--t); font-family:inherit; resize:vertical;"></textarea>
+
     <div id="redExtra" style="display:none; margin-top:12px;">
         <label>Nota da redação (0-1000):</label>
         <input type="number" id="redNota" min="0" max="1000" style="width:80px;">
@@ -343,13 +479,13 @@ article.wk{margin-left:1px;padding-left:6px}.sync-row{flex-direction:column}.sb{
     
     <!-- Botão para aplicar -->
     <button onclick="loadCustomMusic()" class="bt bt-p" style="width:100%; margin-bottom:8px;">Carregar 🎵</button>
-    
+    <button onclick="playLoFi()" class="bt bt-p" style="width:100%; margin-top:8px;">▶ Iniciar Som</button>
     <!-- Iframe do player -->
-    <iframe id="lofiFrame" width="100%" height="80" 
-            src="https://www.youtube-nocookie.com/embed/cIZhlFIyJ_Y?autoplay=0&controls=1&mute=0" 
-            frameborder="0" allow="autoplay; encrypted-media" allowfullscreen 
-            referrerpolicy="strict-origin-when-cross-origin">
-    </iframe>
+   <iframe id="lofiFrame" width="100%" height="152"  <!-- altura maior pro Spotify ficar bonito -->
+        src="" 
+        frameborder="0" allow="autoplay; encrypted-media" allowfullscreen
+        referrerpolicy="strict-origin-when-cross-origin">
+</iframe>
     
     <!-- Botão fechar -->
     <button onclick="toggleMusic()" style="position:absolute;top:8px;right:10px;background:transparent;border:none;color:var(--t);font-size:1.2rem;">✖</button>
@@ -598,9 +734,17 @@ const matIcons = {
 };
 // ===== STATE =====
 let dn=J('cc_d',{}),nt=J('cc_n',{}),sk=J('cc_s',{c:0,d:[]}),oP=J('cc_p',{1:1,2:1,3:1,4:1}),oW=J('cc_w',{}),xp={},mI=null;
+let pulados = J('cc_pulados', {});  // objeto que guarda datas puladas, ex: {"2026-02-17": true}
 function J(k,d){try{return JSON.parse(localStorage.getItem(k))||d}catch{return d}}
-function S(){['cc_d','cc_n','cc_s','cc_p','cc_w'].forEach((k,i)=>localStorage.setItem(k,JSON.stringify([dn,nt,sk,oP,oW][i])))}
-const $=s=>document.querySelector(s);
+function S(){
+    localStorage.setItem('cc_d', JSON.stringify(dn));
+    localStorage.setItem('cc_n', JSON.stringify(nt));
+    localStorage.setItem('cc_s', JSON.stringify(sk));
+    localStorage.setItem('cc_p', JSON.stringify(oP));
+    localStorage.setItem('cc_w', JSON.stringify(oW));
+    localStorage.setItem('cc_pulados', JSON.stringify(pulados));  // ← nova linha
+
+}const $=s=>document.querySelector(s);
 
 // ===== AUDIO BEEP =====
 let audioCtx;
@@ -654,20 +798,178 @@ let h='';
 h+=`<section class="ph ${op?'':'cl'}" data-p="${fn}"><div class="ph-h" role="button" tabindex="0" onclick="tP(${fn})" aria-expanded="${op}"><div class="ph-e">${f.e}</div><div class="ph-i"><div class="ph-t">${f.n}</div><div class="ph-s">${f.s}</div></div><span class="ph-c" style="color:${f.c}">${dc}/${ids.length}·${pct}%</span><span class="ph-a">▼</span></div><div class="ph-b" style="max-height:${op?'999999px':'0'};opacity:${op?1:0}">`;
 Object.keys(g[fn]).sort((a,b)=>a-b).forEach(w=>{const wt=g[fn][w],wd=wt.filter(t=>dn[t.id]).length,wk=fn+'-'+w,wo=oW[wk]!==false,wc=wd===wt.length,d1=fmt(wt[0].data),d2=fmt(wt[wt.length-1].data);
 h+=`<article class="wk ${wo?'':'cl'}"><div class="wk-h" role="button" tabindex="0" onclick="tW('${wk}')" aria-expanded="${wo}"><div class="wk-d ${wc?'cpl':''}" style="background:${f.c}"></div><span class="wk-t">Semana ${w}</span><span class="wk-bg">${d1}→${d2}</span><span class="wk-bg ${wc?'wd':''}">${wd}/${wt.length}✓</span><span class="wk-ar">▼</span></div><div class="wk-b" style="max-height:${wo?'999999px':'0'};opacity:${wo?1:0}">`;
-wt.forEach(t=>{const d2=dn[t.id],ex=xp[t.id],hn=nt[t.id],isSm=t.mat.includes('Sim')||t.tipo==='Simulado';
-h+=`<article class="tk p-${t.pri} ${d2?'done':''} ${ex?'exp':''} ${t.multi?'multi':''} ${isSm?'sim':''} ${t.rest?'rest':''}" data-id="${t.id}" onclick="tE('${t.id}')"><button type="button" class="ck ${d2?'on':''}" onclick="event.stopPropagation();ck('${t.id}')" aria-label="Check"></button><div class="tk-c"><h4>${t.tit}</h4>${t.det?`<p>${t.det}</p>`:''}<div class="tk-tags">
-    ${t.mat.map(m => `<span class="tg tg-${m}">${matIcons[m] || '📌'} ${m}</span>`).join('')}
-    <span class="tg" style="background:rgba(124,92,252,.05);color:var(--ac2)">${t.tipo}</span>
-</div></div><div class="tk-m">
-    <span class="dy">${t.dia}</span>
-    <time datetime="${t.data}">${fmt(t.data)}</time>
- <button type="button" class="nbtn${hn ? ' has' : ''}" onclick="event.stopPropagation(); oM('${t.id}')">📝</button>
-</div></article>`});
-h+=`</div></article>`});h+=`</div></section>`});
-c.innerHTML=h||'<div class="empty">🔍 Nada encontrado</div>';upD()  
+wt.forEach(t => {
+    const d2 = dn[t.id];
+    const ex = xp[t.id];
+    const hn = nt[t.id];
+    const isSm = t.mat.includes('Sim') || t.tipo === 'Simulado';
+
+    const expandedClass = ex ? 'exp' : '';
+
+    h += `<article class="tk p-${t.pri} ${d2 ? 'done' : ''} ${expandedClass} ${t.multi ? 'multi' : ''} ${isSm ? 'sim' : ''} ${t.rest ? 'rest' : ''}" data-id="${t.id}" onclick="tE('${t.id}')">
+        <!-- Sem checkbox no título principal -->
+     <div class="tk-c">
+    <h4>${t.tit}</h4>
+    ${nt[t.id] && nt[t.id].fontes && nt[t.id].fontes.length > 0 ? 
+        `<p style="margin-top:4px; font-size:0.75rem; line-height:1.4;">
+            Fontes usadas:<br>
+            ${nt[t.id].fontes.map(link => 
+                `<a href="${link}" target="_blank" style="color:var(--ac2); text-decoration:underline; display:block; margin-bottom:2px;">${link.substring(0,60)}${link.length > 60 ? '...' : ''}</a>`
+            ).join('')}
+         </p>` 
+        : ''}
+    ${t.det ? `<p>${t.det}</p>` : ''}
+    <div class="tk-tags">
+        ${t.mat.map(m => `<span class="tg tg-${m}">${matIcons[m] || '📌'} ${m}</span>`).join('')}
+        <span class="tg" style="background:rgba(124,92,252,.05);color:var(--ac2)">${t.tipo}</span>
+    </div>
+</div>
+        <div class="tk-m">
+            <span class="dy">${t.dia}</span>
+            <time datetime="${t.data}">${fmt(t.data)}</time>
+            <button type="button" class="nbtn${hn ? ' has' : ''}" onclick="event.stopPropagation(); oM('${t.id}')">📝</button>
+        </div>
+    </article>`;
+
+    // Expansão para múltiplas matérias
+    if (ex && t.mat.length > 1) {
+        h += `<div class="sub-tarefas" style="padding-left:40px; margin-top:8px; border-left:2px solid var(--ac); padding-bottom:8px;">`;
+        t.mat.forEach((mat, idx) => {
+            let tituloMat = t.tit;
+            if (t.tit.includes(' + ')) {
+                const partes = t.tit.split(' + ');
+                if (partes[idx]) tituloMat = partes[idx].trim();
+            }
+
+            const subId = `${t.id}-${mat}`;
+            const subFeito = dn[subId] || d2;
+
+            h += `<article class="tk sub-tk p-baixa ${subFeito ? 'done' : ''}" style="margin:4px 0; background:rgba(124,92,252,0.08);">
+                <button type="button" class="ck ${subFeito ? 'on' : ''}" onclick="event.stopPropagation(); ckSub('${subId}', '${t.id}')"></button>
+                <div class="tk-c" style="font-size:0.9rem;">
+                    <h4 style="color:var(--ac2);">${mat}: ${tituloMat}</h4>
+                </div>
+            </article>`;
+        });
+        h += `</div>`;
+    }
+
+    // Expansão para dias de descanso (Sáb e Dom separados)
+    if (ex && t.rest) {
+        h += `<div class="sub-tarefas" style="padding-left:40px; margin-top:8px; border-left:2px solid var(--g); padding-bottom:8px;">`;
+        
+        // Sábado
+        const subIdSab = `${t.id}-Sab`;
+        const subFeitoSab = dn[subIdSab] || d2;
+        h += `<article class="tk sub-tk p-baixa ${subFeitoSab ? 'done' : ''}" style="margin:4px 0; background:rgba(34,197,94,0.08);">
+            <button type="button" class="ck ${subFeitoSab ? 'on' : ''}" onclick="event.stopPropagation(); ckSub('${subIdSab}', '${t.id}')"></button>
+            <div class="tk-c" style="font-size:0.9rem;">
+                <h4 style="color:var(--g);">Sábado: ${t.tit}</h4>
+            </div>
+        </article>`;
+
+        // Domingo
+        const subIdDom = `${t.id}-Dom`;
+        const subFeitoDom = dn[subIdDom] || d2;
+        h += `<article class="tk sub-tk p-baixa ${subFeitoDom ? 'done' : ''}" style="margin:4px 0; background:rgba(34,197,94,0.08);">
+            <button type="button" class="ck ${subFeitoDom ? 'on' : ''}" onclick="event.stopPropagation(); ckSub('${subIdDom}', '${t.id}')"></button>
+            <div class="tk-c" style="font-size:0.9rem;">
+                <h4 style="color:var(--g);">Domingo: ${t.tit}</h4>
+            </div>
+        </article>`;
+
+        h += `</div>`;
+    }
+});h+=`</div></article>`});h+=`</div></section>`});
+c.innerHTML=h||'<div class="empty">🔍 Nada encontrado</div>';upD()
+renderMapaFases();
+checkAtraso();
 }
 
-function ck(id){const b=document.querySelector(`[data-id="${id}"] .ck`);if(dn[id]){delete dn[id];toast('⬜ Desmarcada')}else{dn[id]=Date.now();if(b)b.classList.add('on');beep(660,.1);toast('✅ Concluída!');const td=new Date().toISOString().split('T')[0];if(!sk.d.includes(td))sk.d.push(td);const n=Object.keys(dn).length;if(n%10===0){toast(`🔥 ${n} tarefas!`);confetti()}if(n===T.length){toast('🏆 100%!!');confetti();confetti()}}S();draw()}
+function ck(id) {
+    const b = document.querySelector(`[data-id="${id}"] .ck`);
+    if (dn[id]) {
+        delete dn[id];
+        if (b) b.classList.remove('on');
+        toast('⬜ Desmarcada');
+    } else {
+        dn[id] = Date.now();
+        if (b) b.classList.add('on');
+        beep(660, .1);
+        toast('✅ Concluída!');
+        const td = new Date().toISOString().split('T')[0];
+        if (!sk.d.includes(td)) {
+            sk.d.push(td);
+        }
+        const n = Object.keys(dn).length;
+        if (n % 10 === 0) {
+            toast(`🔥 ${n} tarefas!`);
+            confetti();
+        }
+        if (n === T.length) {
+            toast('🏆 100%!!');
+            confetti();
+            confetti();
+        }
+    }
+    S();
+    draw();
+}
+function ckSub(subId, parentId) {
+    event.stopPropagation();
+
+    if (dn[subId]) {
+        delete dn[subId];
+        toast('⬜ Sub-tarefa desmarcada');
+    } else {
+        dn[subId] = Date.now();
+        toast('✅ Sub-tarefa concluída!');
+        beep(660, .1);
+    }
+
+    // Atualiza status da tarefa pai (se todas sub estiverem feitas)
+    const parentTask = T.find(t => t.id === parentId);
+    if (parentTask && (parentTask.mat.length > 1 || parentTask.rest)) {
+        const todasFeitas = (parentTask.mat.length > 1 
+            ? parentTask.mat.every(mat => dn[`${parentId}-${mat}`])
+            : dn[`${parentId}-Sab`] && dn[`${parentId}-Dom`]);
+
+        if (todasFeitas) {
+            dn[parentId] = Date.now();
+        } else {
+            delete dn[parentId];
+        }
+    }
+
+    S();
+    draw();
+}
+function ckSub(subId, parentId) {
+    event.stopPropagation();
+
+    if (dn[subId]) {
+        delete dn[subId];
+        toast('⬜ Sub-tarefa desmarcada');
+    } else {
+        dn[subId] = Date.now();
+        toast('✅ Sub-tarefa concluída!');
+        beep(660, .1);
+    }
+
+    // Atualiza status da tarefa pai (se todas sub estiverem feitas)
+    const parentTask = T.find(t => t.id === parentId);
+    if (parentTask && parentTask.mat.length > 1) {
+        const todasFeitas = parentTask.mat.every(mat => dn[`${parentId}-${mat}`]);
+        if (todasFeitas) {
+            dn[parentId] = Date.now();
+        } else {
+            delete dn[parentId];
+        }
+    }
+
+    S();
+    draw(); // re-renderiza para atualizar visual
+}
 function tE(id){xp[id]=!xp[id];draw()}
 function tP(n){oP[n]=oP[n]===false;S();draw()}
 function tW(k){oW[k]=oW[k]===false;S();draw()}
@@ -684,22 +986,47 @@ $('[data-pr="pct"]').textContent=pct+'%';$('[data-pr="bar"]').style.width=pct+'%
 const dates=sk.d.sort();let sc=0;const now=new Date();for(let i=0;i<60;i++){const d=new Date(now);d.setDate(now.getDate()-i);if(dates.includes(d.toISOString().split('T')[0]))sc++;else if(i>0)break}
 sk.c=sc;$('[data-s="n"]').textContent=sc;let dots='';for(let i=20;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);const ds=d.toISOString().split('T')[0];dots+=`<div class="s-c ${dates.includes(ds)?'on':''} ${i===0?'now':''}"></div>`}$('[data-s="g"]').innerHTML=dots;rT()}
 
+function checkAtraso() {
+    const hoje = new Date().toISOString().split('T')[0];
+    const pendentesAtrasadas = T.filter(t => !dn[t.id] && t.data < hoje && t.pri === 'alta');
+    
+    if (pendentesAtrasadas.length > 0) {
+        const maisAntiga = pendentesAtrasadas.reduce((prev, curr) => 
+            new Date(curr.data) < new Date(prev.data) ? curr : prev
+        );
+        const dias = Math.floor((new Date(hoje) - new Date(maisAntiga.data)) / (1000*60*60*24));
+        
+        document.getElementById('diasAtraso').textContent = dias;
+        document.getElementById('atrasoAlerta').style.display = 'block';
+
+        // Dica extra: piscar se atraso > 3 dias
+        if (dias > 3) {
+            document.getElementById('atrasoAlerta').classList.add('atraso-alto');
+        } else {
+            document.getElementById('atrasoAlerta').classList.remove('atraso-alto');
+        }
+    } else {
+        document.getElementById('atrasoAlerta').style.display = 'none';
+    }
+}
+
 function oM(id){
     mI = id;
-    const task = T.find(t => t.id === id);          
+    const task = T.find(t => t.id === id);
     $('[data-dl="t"]').textContent = task.tit;
     document.getElementById('nt').value = nt[id] ? (typeof nt[id] === 'object' ? nt[id].text || '' : nt[id]) : '';
-
     
+   // Carrega múltiplos links (separados por \n)
+const fontes = nt[id] && typeof nt[id] === 'object' && nt[id].fontes ? nt[id].fontes.join('\n') : '';
+document.getElementById('fonteLinks').value = fontes;
+
     if (task && (task.mat.includes('Red') || task.tipo.includes('Red'))) {
         $('#redExtra').style.display = 'block';
-
-                if (nt[id] && typeof nt[id] === 'object') {
+        if (nt[id] && typeof nt[id] === 'object') {
             $('#redNota').value = nt[id].nota || '';
-           if (nt[id] && nt[id].img) {
-    $('#imgPreview').innerHTML = `<img src="${nt[id].img}" style="max-width:100%; border-radius:8px;">`;
-    $('#redNota').value = nt[id].nota || '';
-}
+            if (nt[id].img) {
+                $('#imgPreview').innerHTML = `<img src="${nt[id].img}" style="max-width:100%; border-radius:8px;">`;
+            }
         } else {
             $('#redNota').value = '';
             $('#imgPreview').innerHTML = '';
@@ -709,62 +1036,95 @@ function oM(id){
         $('#redNota').value = '';
         $('#imgPreview').innerHTML = '';
     }
-
     document.getElementById('dlg').showModal();
 }
 function cDlg(){document.getElementById('dlg').close();mI=null}
 function sN(){
     const textareaValue = document.getElementById('nt').value.trim();
+    const fontesText = document.getElementById('fonteLinks').value.trim();
+    
+    let fontesArray = [];
+    if (fontesText) {
+        fontesArray = fontesText.split('\n')
+            .map(link => link.trim())
+            .filter(link => link && (link.startsWith('http://') || link.startsWith('https://')));
+    }
+
+    let savedData = { text: textareaValue };
+
+    // Adiciona as fontes ao objeto (sempre, mesmo se vazio)
+    if (fontesArray.length > 0) {
+        savedData.fontes = fontesArray;
+    }
 
     if ($('#redExtra').style.display !== 'none') {
-        // É redação → salva como objeto
+        // É redação → trata foto e nota
         const nota = $('#redNota').value.trim();
         const fileInput = $('#redImg');
 
         if (fileInput.files && fileInput.files[0]) {
-            // Tem nova foto → lê e salva tudo
+            // Tem nova foto → lê como base64 (async)
             const reader = new FileReader();
             reader.onload = function(ev) {
-                nt[mI] = {
-                    text: textareaValue,
-                    nota: nota || '',
-                    img: ev.target.result
-                };
+                savedData.nota = nota || '';
+                savedData.img = ev.target.result;
+                // Garante que fontes sejam salvas também na redação
+                if (fontesArray.length > 0) savedData.fontes = fontesArray;
+                nt[mI] = savedData;
                 S();
                 cDlg();
-                toast('Redação salva com foto e nota!');
+                toast('Redação + fontes salvas!');
                 draw();
             };
             reader.readAsDataURL(fileInput.files[0]);
-            return; // Espera o onload terminar (async)
+            return; // Espera o onload terminar
         } else {
             // Sem nova foto → mantém a anterior se existir
             let existingImg = '';
             if (nt[mI] && typeof nt[mI] === 'object' && nt[mI].img) {
                 existingImg = nt[mI].img;
             }
-            nt[mI] = {
-                text: textareaValue,
-                nota: nota || '',
-                img: existingImg
-            };
-        }
-    } else {
-        // Não é redação → salva como string simples
-        if (textareaValue) {
-            nt[mI] = textareaValue;
-        } else {
-            delete nt[mI];
+            savedData.nota = nota || '';
+            savedData.img = existingImg;
         }
     }
 
+    // Salva tudo (incluindo fontes) para tarefas normais ou redação sem nova foto
+    nt[mI] = savedData;
     S();
     cDlg();
-    toast('💾 Salvo!');
+    toast(fontesArray.length > 0 ? '💾 Anotações + fontes salvas!' : '💾 Anotações salvas!');
     draw();
 }
 function eCSV(){let c='\uFEFF"Sem","Fase","Dia","Data","Mat","Título","Det","Tipo","Pri","Feito"\n';T.forEach(t=>{c+=`${t.sem},"${F[t.fase].n}","${t.dia}","${t.data}","${t.mat.join(',')}","${t.tit}","${t.det.replace(/"/g,'""')}","${t.tipo}","${t.pri}","${dn[t.id]?'TRUE':'FALSE'}"\n`});const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([c],{type:'text/csv;charset=utf-8;'}));a.download='enem2026_cc.csv';a.click();toast('📥 CSV!')}
-function rAll(){if(!confirm('⚠️ Apagar TUDO?'))return;dn={};nt={};sk={c:0,d:[]};localStorage.clear();S();draw();toast('🔄 Reset!')}
+function rAll(){
+    if(!confirm('⚠️ Tem certeza que quer APAGAR TUDO?\n\nIsso vai resetar:\n- Tarefas feitas\n- Anotações\n- Streak\n- Progresso\n- Dias pulados\n- Tudo no localStorage')) return;
+
+    // Limpa todas as variáveis
+    dn = {};
+    nt = {};
+    sk = {c:0, d:[]};
+    oP = {1:1,2:1,3:1,4:1};
+    oW = {};
+    pulados = {};  // ← limpa os dias pulados
+    xp = {};       // expandidos, se usar
+
+    // Limpa TODO o localStorage (mais seguro e completo)
+    localStorage.clear();
+
+    // Salva o estado zerado (opcional, mas garante consistência)
+    S();
+
+    // Recarrega a página para reset visual total
+    draw();
+    upD();
+    highlightHoje();
+    renderMapaFases();
+    checkAtraso();
+
+    toast('🔄 Tudo resetado! Começando do zero.');
+    confetti(); // efeito legal no reset
+}
 function fmt(d){const[y,m,dd]=d.split('-');return dd+'/'+m}
 function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.getElementById('toasts').appendChild(t);setTimeout(()=>t.remove(),3000)}
 function confetti(){const cv=document.getElementById('confetti'),ctx=cv.getContext('2d');cv.width=innerWidth;cv.height=innerHeight;const ps=[],cl=['#22c55e','#eab308','#7c5cfc','#ef4444','#f97316','#06b6d4','#ec4899'];for(let i=0;i<80;i++)ps.push({x:Math.random()*cv.width,y:-10-Math.random()*200,vx:(Math.random()-.5)*7,vy:Math.random()*3+2,c:cl[~~(Math.random()*cl.length)],s:Math.random()*4+2,r:Math.random()*360,rs:(Math.random()-.5)*10,l:1});(function go(){ctx.clearRect(0,0,cv.width,cv.height);let a=false;ps.forEach(p=>{if(p.l<=0)return;a=true;p.x+=p.vx;p.vy+=.1;p.y+=p.vy;p.r+=p.rs;p.l-=.007;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r*Math.PI/180);ctx.globalAlpha=p.l;ctx.fillStyle=p.c;ctx.fillRect(-p.s/2,-p.s/2,p.s,p.s*.6);ctx.restore()});if(a)requestAnimationFrame(go);else ctx.clearRect(0,0,cv.width,cv.height)})()}
@@ -901,51 +1261,66 @@ function loadCustomMusic() {
     const input = document.getElementById('playlistInput');
     const frame = document.getElementById('lofiFrame');
     let url = input.value.trim();
-
+    
     if (!url) {
-        toast('Cole um link ou ID válido!');
+        toast('Cole um link do YouTube ou Spotify!');
         return;
-    }
-
-    // Extrai ID de vídeo ou playlist
-    let videoId = '';
-    let playlistId = '';
-
-    // Caso seja link completo
-    if (url.includes('youtube.com/watch?v=')) {
-        const match = url.match(/v=([^&]+)/);
-        if (match) videoId = match[1];
-    } else if (url.includes('youtu.be/')) {
-        videoId = url.split('/').pop().split('?')[0];
-    } else if (url.includes('list=')) {
-        const match = url.match(/list=([^&]+)/);
-        if (match) playlistId = match[1];
-    } else {
-        // Assume que colou só o ID
-        if (url.startsWith('PL')) {
-            playlistId = url;
-        } else {
-            videoId = url;
-        }
     }
 
     let newSrc = '';
-    if (playlistId) {
-        // Formato para playlist: videoseries?list=PL...
-        newSrc = `https://www.youtube-nocookie.com/embed/videoseries?list=${playlistId}&autoplay=1&controls=1&mute=0`;
-        toast('Playlist carregada! 🎶');
-    } else if (videoId) {
-        newSrc = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&controls=1&mute=0`;
-        toast('Vídeo carregado! ▶');
-    } else {
-        toast('Link/ID inválido. Tente novamente.');
-        return;
+    let toastMsg = '';
+    let isSpotify = false;
+
+    // Detecta Spotify
+    if (url.includes('spotify.com')) {
+        let spotifyId = '';
+        let type = 'playlist';  // default para sua URL
+
+        if (url.includes('/playlist/')) {
+            spotifyId = url.split('/playlist/')[1].split('?')[0];
+        } else if (url.includes('/album/')) {
+            spotifyId = url.split('/album/')[1].split('?')[0];
+            type = 'album';
+        } else if (url.includes('/track/')) {
+            spotifyId = url.split('/track/')[1].split('?')[0];
+            type = 'track';
+        }
+
+        if (spotifyId) {
+            // Embed oficial Spotify com autoplay + mute (mute não existe, mas autoplay tenta)
+            newSrc = `https://open.spotify.com/embed/${type}/${spotifyId}?utm_source=generator&autoplay=true`;
+            toastMsg = 'Spotify carregado! Clique "Ativar Som" ou no play do player.';
+            frame.height = '152';  // bom para playlists
+            isSpotify = true;
+        }
+    }
+    // YouTube (mantém com mute inicial)
+    else {
+        let videoId = '';
+        let playlistId = '';
+
+        // ... (seu código atual de extração YouTube, sem mudanças)
+
+        if (playlistId) {
+            newSrc = `https://www.youtube-nocookie.com/embed/videoseries?list=${playlistId}&autoplay=1&mute=1&controls=1&loop=1`;
+            toastMsg = 'Playlist YouTube carregada (mute inicial)! Clique "Ativar Som".';
+            frame.height = '152';
+        } else if (videoId) {
+            newSrc = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&mute=1&controls=1&loop=1`;
+            toastMsg = 'Vídeo YouTube carregado (mute inicial)! Clique "Ativar Som".';
+            frame.height = '80';
+        }
     }
 
-    // Atualiza o iframe
-    frame.src = newSrc;
-}
-function showSpacedReview() {
+    if (newSrc) {
+        frame.src = newSrc;
+        // Força recarregamento para aplicar autoplay
+        setTimeout(() => { frame.src = newSrc; }, 100);
+        toast(toastMsg + ' (navegadores bloqueiam som auto sem clique)');
+    } else {
+        toast('Link inválido. Use YouTube ou Spotify.');
+    }
+}function showSpacedReview() {
     const today = new Date();
     const toReview = T.filter(t => {
         if (!dn[t.id]) return false;
@@ -1037,12 +1412,281 @@ function highlightHoje() {
         card.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 }
+function renderMapaFases() {
+    const container = document.getElementById('mapaFases');
+    if (!container) return;
+    
+    let html = '';
+    [1,2,3,4].forEach(f => {
+        const fase = F[f];
+        const tarefasFase = T.filter(t => t.fase == f);
+        const feitas = tarefasFase.filter(t => dn[t.id]).length;
+        const total = tarefasFase.length;
+        const pct = total ? Math.round(feitas / total * 100) : 0;
+        
+        const isAtual = tarefasFase.some(t => t.data <= new Date().toISOString().split('T')[0] && 
+            !tarefasFase.some(tt => tt.data > t.data && !dn[tt.id]));
+        const isConcluida = pct === 100;
+        
+        html += `
+            <div class="fase-dot ${isAtual ? 'atual' : ''} ${isConcluida ? 'concluida' : ''}" 
+                 style="background:${fase.c}; color:#000;" 
+                 onclick="scrollToFase(${f})"
+                 title="$$ {fase.n} – \[  {pct}% (  \]{feitas}/ $${total})">
+                ${fase.e}
+            </div>
+        `;
+    });
+    
+    container.innerHTML = html;
+}
+
+function scrollToFase(faseNum) {
+    const el = document.querySelector(`section.ph[data-p="${faseNum}"]`);
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (el.classList.contains('cl')) tP(faseNum); // expande se estiver fechada
+    }
+}
 function fmt(dateStr) {
     const [y, m, d] = dateStr.split('-');
     return `${d}/${m}/${y}`;
 }
+let mesAtual = 1;   // Começa em fevereiro 2026 (mês 1 = fevereiro no JS)
+let anoAtual = 2026;
+
+function toggleCalendario() {
+    console.log("Botão Calendário clicado!"); // ← para debug
+
+    const dialog = document.getElementById('calendarioDialog');
+    if (!dialog) {
+        console.error("ERRO: Dialog #calendarioDialog não encontrado");
+        return;
+    }
+
+    if (dialog.open) {
+        dialog.close();
+        console.log("Modal fechado");
+    } else {
+        dialog.showModal();
+        renderCalendario();
+        console.log("Modal aberto + renderizado");
+    }
+}
+
+function mudarMes(delta) {
+    mesAtual += delta;
+
+    // Limita: fevereiro (1) a outubro (9) de 2026
+    if (anoAtual === 2026) {
+        if (mesAtual < 1) mesAtual = 1;
+        if (mesAtual > 9) mesAtual = 9;
+    }
+
+    const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+                   "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+    document.getElementById('tituloMes').textContent = `Calendário ${meses[mesAtual]} ${anoAtual}`;
+
+    renderCalendario();
+}
+
+function renderCalendario() {
+    const grid = document.getElementById('calendarioGrid');
+    if (!grid) return;
+
+    while (grid.children.length > 7) grid.removeChild(grid.lastChild);
+
+    const primeiroDia = new Date(anoAtual, mesAtual, 1);
+    const ultimoDia = new Date(anoAtual, mesAtual + 1, 0);
+    const diaSemanaInicio = primeiroDia.getDay();
+
+    for (let i = 0; i < diaSemanaInicio; i++) {
+        const vazio = document.createElement('div');
+        vazio.className = 'cal-dia';
+        vazio.style.visibility = 'hidden';
+        grid.appendChild(vazio);
+    }
+
+    const hoje = new Date();
+    for (let dia = 1; dia <= ultimoDia.getDate(); dia++) {
+        const dataStr = `${anoAtual}-${String(mesAtual + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+        const div = document.createElement('div');
+        div.className = 'cal-dia';
+
+        const tarefasDia = T.filter(t => t.data === dataStr);
+        let conteudo = `<strong>${dia}</strong>`;
+
+        if (pulados[dataStr]) {
+            // Dia pulado → destaque especial
+            div.classList.add('cal-pulado');  // vamos criar estilo abaixo
+            conteudo += `<br><small style="color:var(--y); font-weight:bold;">Pulado</small>`;
+            if (tarefasDia.length > 0) {
+                conteudo += `<br><small>(tarefas marcadas como feitas)</small>`;
+            }
+        } else if (tarefasDia.length > 0) {
+            const feitas = tarefasDia.filter(t => dn[t.id]).length;
+            const status = feitas === tarefasDia.length ? '✓ Feito' : `${feitas}/${tarefasDia.length}`;
+
+            const titulos = tarefasDia.slice(0, 2).map(t => {
+                let txt = t.tit.length > 20 ? t.tit.substring(0,17)+'...' : t.tit;
+                return dn[t.id] ? `✓ ${txt}` : `⬜ ${txt}`;
+            }).join('<br>');
+
+            if (tarefasDia.length > 2) titulos += '<br>+ mais';
+
+            conteudo += `<br><small style="line-height:1.15;">${titulos}<br><strong>${status}</strong></small>`;
+        } else {
+            conteudo += '<br><small>Livre</small>';
+        }
+
+        div.innerHTML = conteudo;
+
+        // Classes de estilo
+        if (dataStr === hoje.toISOString().split('T')[0]) div.classList.add('cal-hoje');
+        if (tarefasDia.length > 0 && !pulados[dataStr]) {
+            const feitas = tarefasDia.filter(t => dn[t.id]).length;
+            if (feitas === tarefasDia.length) div.classList.add('cal-feito');
+            else if (feitas > 0) div.classList.add('cal-pendente');
+            else if (new Date(dataStr) < hoje) div.classList.add('cal-atrasado');
+        }
+
+        div.onclick = () => {
+            const el = document.querySelector(`.tk time[datetime="${dataStr}"]`);
+            if (el) {
+                el.closest('.tk').scrollIntoView({behavior:'smooth', block:'center'});
+                document.getElementById('calendarioDialog').close();
+            }
+        };
+
+        grid.appendChild(div);
+    }
+}function getStatusDia(dataStr) {
+    const tarefas = T.filter(t => t.data === dataStr);
+    if (tarefas.length === 0) return 'Livre';
+    const feitas = tarefas.filter(t => dn[t.id]).length;
+    return feitas === tarefas.length ? '✓ Feito' : `${feitas}/${tarefas.length}`;
+}
+
+function copyDiaInteiro() {
+    const hoje = new Date().toISOString().split('T')[0];
+    const tarefasHoje = T.filter(t => t.data === hoje);
+
+    if (tarefasHoje.length === 0) {
+        toast("Nenhuma tarefa hoje para copiar.");
+        return;
+    }
+
+    let texto = `Tarefas do dia ${fmt(hoje)} (${new Date().toLocaleDateString('pt-BR', {weekday: 'long'})}):\n\n`;
+    tarefasHoje.forEach(t => {
+        const feito = dn[t.id] ? '✓' : '⬜';
+        texto += `${feito} ${t.dia} - ${t.tit} (${t.mat.join(' + ')}) - ${t.tipo}\n`;
+    });
+
+    navigator.clipboard.writeText(texto).then(() => {
+        toast("Dia copiado para a área de transferência! 📋");
+    }).catch(err => {
+        toast("Erro ao copiar. Copie manualmente.");
+        console.error(err);
+    });
+}
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('btnCalendario');
+    if (btn) {
+        btn.addEventListener('click', toggleCalendario);
+        console.log("Listener do botão Calendário adicionado com sucesso");
+    } else {
+        console.error("Botão #btnCalendario não encontrado no DOM");
+    }
+});
+function pularDia() {
+    console.log("pularDia() chamada"); // ← debug
+    const hojeStr = new Date().toISOString().split('T')[0];
+    console.log("Hoje:", hojeStr); // debug
+
+    if (pulados[hojeStr]) {
+        toast("Este dia já foi pulado.");
+        console.log("Dia já pulado");
+        return;
+    }
+
+    if (!confirm("Deseja pular o dia inteiro?\n\nTodas as tarefas de hoje serão marcadas como feitas e o dia aparecerá como 'PULADO' no calendário.")) {
+        console.log("Cancelado pelo usuário");
+        return;
+    }
+
+    const tarefasHoje = T.filter(t => t.data === hojeStr);
+    console.log("Tarefas hoje:", tarefasHoje.length); // debug
+
+    tarefasHoje.forEach(t => {
+        if (!dn[t.id]) {
+            dn[t.id] = Date.now();
+            console.log("Marcada:", t.id);
+        }
+    });
+function playLoFi() {
+    const frame = document.getElementById('lofiFrame');
+    if (!frame.src) {
+        toast('Carregue uma playlist primeiro!');
+        return;
+    }
+
+    if (frame.src.includes('spotify.com')) {
+        // Spotify: recarrega com autoplay forçado + tenta play
+        let src = frame.src;
+        if (!src.includes('autoplay=true')) {
+            src += (src.includes('?') ? '&' : '?') + 'autoplay=true';
+        }
+        frame.src = src;
+        toast('Tentando tocar Spotify... clique no play dentro do player se necessário!');
+    } else {
+        // YouTube: remove mute e reforça autoplay
+        let src = frame.src.replace('mute=1', 'mute=0');
+        if (!src.includes('autoplay=1')) {
+            src += (src.includes('?') ? '&' : '?') + 'autoplay=1';
+        }
+        frame.src = src;
+        toast('Som ativado no YouTube! ▶ (se não tocar, clique play no vídeo)');
+    }
+}
+
+    pulados[hojeStr] = true;
+    console.log("Marcado como pulado:", hojeStr);
+
+    S();
+    draw();
+    upD();
+
+    confetti();
+    beep(660, 0.15);
+    setTimeout(() => beep(880, 0.15), 120);
+
+    toast(`Dia ${fmt(hojeStr)} pulado! ✓`);
+
+    const dlg = document.getElementById('calendarioDialog');
+    if (dlg && dlg.open) dlg.close();
+}
+document.addEventListener('DOMContentLoaded', () => {
+    // Listener do calendário (já tem)
+    const btnCalendario = document.getElementById('btnCalendario');
+    if (btnCalendario) {
+        btnCalendario.addEventListener('click', toggleCalendario);
+    }
+
+    // Listener extra para o botão Pular Dia (por segurança)
+    const btnPular = document.querySelector('#hojeDestaque button[onclick="pularDia()"]');
+    if (btnPular) {
+        btnPular.addEventListener('click', () => {
+            console.log("Botão Pular Dia clicado via listener");
+            pularDia();
+        });
+    } else {
+        console.warn("Botão Pular Dia não encontrado no DOM");
+    }
+});
 window.addEventListener('load', () => {
     draw();
+    renderMapaFases();
+    checkAtraso();
     highlightHoje();
 });
 </script>
